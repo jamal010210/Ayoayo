@@ -24,4 +24,9 @@ class Board:
     def draw(self):
         """Draw the entire board."""
         self.field_collection.draw()
+
+        # todo: remove this console output code
+        for player in self.bank:
+            print(f"{player.name}: {self.bank[player]}")
+
         # todo: Draw board related stuff (E.g. bank)

@@ -18,8 +18,16 @@ class Game:
 
     def draw(self):
         """Draws everything in a game"""
+
+        # todo: remove this console output code
+        print("===========================")
+
         self.board.draw()
-        # Todo implement
+
+        # todo: remove this console output code
+        print("===========================")
+
+        # Todo draw game specific things (E.g. round counter)
 
     def end_turn(self):
         """Ends the turn"""

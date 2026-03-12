@@ -41,7 +41,15 @@ class FieldCollection:
 
     def draw(self):
         """Draws everything thats on the board"""
-        # todo implement
+
+        # todo: remove this console output code
+        half = self.NUMBER_OF_FIELDS // 2
+        top = " ".join(f"[{self.fields[i].beans}]" for i in range(self.NUMBER_OF_FIELDS - 1, half - 1, -1))
+        bottom = " ".join(f"[{self.fields[i].beans}]" for i in range(half))
+        print(top)
+        print(bottom)
+
+        # todo implement with pygame 
 
     def get_field_index(self, field: Field) -> int:
         """Return the board index of a field"""
