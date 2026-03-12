@@ -10,9 +10,13 @@ class Board:
     """
 
     def __init__(self, player_1: Player, player_2: Player):
-        self.beans_player_1 = 0
-        self.beans_player_2 = 0
+        self.bank = {player_1: 0, player_2: 0}
         self.field_collection = FieldCollection(player_1, player_2)
+
+    def seed_from_field(self, index: int, player: Player):
+        last_field = self.field_collection.start_seeding_from(index, player)
+        harvested_beans = self.field_collection.start_harvesting_from(last_field, player)
+        self.bank[player] += harvested_beans
 
     def clone_deep(self) -> Self:
         raise NotImplementedError  # todo implement
