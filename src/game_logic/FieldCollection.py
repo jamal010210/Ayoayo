@@ -73,10 +73,11 @@ class FieldCollection:
             int: Index of the last field
         """
 
-        if self.can_seed_from(index, player):
+        if not self.can_seed_from(index, player):
             raise ValueError(f"{player.name} can not seed from field {index}")
 
         beans = self.fields[index].beans
+        self.fields[index].beans = 0
 
         while beans > 0:
             index = self.get_next_index(index)

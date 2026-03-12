@@ -23,4 +23,5 @@ class Board:
 
     def draw(self):
         """Draw the entire board."""
-        raise NotImplementedError  # todo implement
+        self.field_collection.draw()
+        # todo: Draw board related stuff (E.g. bank)
