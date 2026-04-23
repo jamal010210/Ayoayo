@@ -1,0 +1,28 @@
+from game_logic.Game import Game
+from Board_renderer import Renderer
+import pygame
+import math
+
+pygame.init()
+game = Game()
+renderer = Renderer(game.board)
+clock = pygame.time.Clock()
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            raise SystemExit
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            click_x, click_y = event.pos
+            for field_index, x, y in renderer.hole_positions:
+                distance = math.sqrt((click_x - x)**2 + (click_y - y)**2)
+                if distance < renderer.HOLE_RADIUS:
+                    game.board.seed_from_field(field_index, game.current_player())
+                    game.end_turn()
+        
+                    
+
+    
+    renderer.draw()
+    clock.tick(60)

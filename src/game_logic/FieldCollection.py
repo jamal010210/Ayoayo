@@ -31,13 +31,13 @@ class FieldCollection:
 
         return fields
 
-    def get_next_index(self, index: int, distance: int = 1) -> int:
+    def get_next_index(self, index: int, distance: int = 1):
         """Get the next field index (rotating counter clock wise)"""
         return (index + distance) % self.NUMBER_OF_FIELDS
 
-    def get_previous_index(self, index: int, distance: int = 1) -> int:
+    def get_previous_index(self, index: int, distance: int = 1):
         """Get the previous field index (rotating clock wise)"""
-        return (index + distance) % self.NUMBER_OF_FIELDS
+        return (index - distance) % self.NUMBER_OF_FIELDS
 
     def draw(self):
         """Draws everything thats on the board"""
@@ -58,8 +58,28 @@ class FieldCollection:
                 return i
 
         raise ValueError("Field not found in list")
+    
+    
+    def opponent_has_no_seeds(self, player: Player):
+        
+        for field in self.fields:
+                if field.owner is not player:
+                    if field.beans > 0:
+                        return False
+        return True
+        
+    def can_reach_opponent(self, index: int, player: Player):
+        last_own_index = 0
+        for i in range(self.NUMBER_OF_FIELDS):
+            if self.fields[i].owner is player:
+                last_own_index = i
+                    
+        distance_to_opponent = (last_own_index - index) + 1
+        return self.fields[index].beans >= distance_to_opponent
+        
+        
 
-    def can_seed_from(self, index: int, player: Player) -> bool:
+    def can_seed_from(self, index: int, player: Player):
         """Returns whether a player can seed from a given field"""
 
         if self.fields[index].owner is not player:
@@ -69,11 +89,19 @@ class FieldCollection:
             return False
 
         # Todo implement feeding rule
-
+        """
+        The feeding rule says:
+        When the opponent has no seeds, 
+        only let me take the seeds from one of my field with which I can reach opponents field to feed him.
+        """
+        if self.opponent_has_no_seeds(player):
+            if not self.can_reach_opponent(index, player):
+                return False       
+                
         return True
 
 
-    def start_seeding_from(self, index: int, player: Player) -> int:
+    def start_seeding_from(self, index: int, player: Player):
         """
         Harvests beans starting from a given field.
 
@@ -98,7 +126,7 @@ class FieldCollection:
         return index
 
 
-    def start_harvesting_from(self, index: int, player: Player) -> int:
+    def start_harvesting_from(self, index: int, player: Player):
         """
         Harvests beans starting from a given field.
 
@@ -110,9 +138,20 @@ class FieldCollection:
         while self.can_harvest_from(index, player):
             yielded_beans += self.fields[index].beans
             self.fields[index].beans = 0
-            index = -1
+            index = self.get_previous_index(index)
 
         return yielded_beans
+    
+    def would_starve_opponent(self, index: int, player: Player):
+        """If harvesting would leave opponent with no seeds, you can not harvest"""
+        total_opponent_seeds = 0
+        
+        for field in self.fields:
+            if field.owner is not player:
+                total_opponent_seeds += field.beans
+        
+        return total_opponent_seeds - self.fields[index].beans == 0
+            
 
     def can_harvest_from(self, index: int, player: Player):
         """Checks if a player can harvest from a field"""
@@ -125,6 +164,8 @@ class FieldCollection:
             return False
 
         # todo implement starving check
+        if self.would_starve_opponent(index, player):
+            return False
 
         return True
 
