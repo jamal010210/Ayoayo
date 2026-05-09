@@ -1,10 +1,10 @@
 from pathlib import Path
 import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from game_logic.Board import Board
 from game_logic.Player import Player
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 
 
