@@ -1,4 +1,3 @@
-from typing import Self
 from game_logic.Field import Field
 from game_logic.Player import Player
 
@@ -28,7 +27,7 @@ class FieldCollection:
 
         return fields
 
-    def clone(self) -> Self:
+    def clone(self):
         # Create empty object instead of using the initializer unnecessarily
         clone = object.__new__(type(self))
 
