@@ -16,7 +16,6 @@ class FieldCollection:
     def _create_fields(self, player_1: Player, player_2: Player) -> list[Field]:
         fields = []
         for i in range(self.NUMBER_OF_FIELDS):
-        
 
             owner: Player
             if i < self.NUMBER_OF_FIELDS // 2:
@@ -31,7 +30,7 @@ class FieldCollection:
 
     def clone(self) -> Self:
         # Create empty object instead of using the initializer unnecessarily
-        clone = object.__new__(type(self))  
+        clone = object.__new__(type(self))
 
         cloned_fields = []
         for field in self.fields:
@@ -49,7 +48,6 @@ class FieldCollection:
         """Get the previous field index (rotating clock wise)"""
         return (index - distance) % self.NUMBER_OF_FIELDS
 
-
     def get_field_index(self, field: Field) -> int:
         """Return the board index of a field"""
         for i in range(len(self.fields)):
@@ -57,25 +55,24 @@ class FieldCollection:
                 return i
 
         raise ValueError("Field not found in list")
-    
-    
+
     def opponent_has_no_seeds(self, player: Player):
-        
+
         for field in self.fields:
-                if field.owner is not player:
-                    if field.beans > 0:
-                        return False
+            if field.owner is not player:
+                if field.beans > 0:
+                    return False
         return True
-        
+
     def can_reach_opponent(self, index: int, player: Player):
         last_own_index = 0
         for i in range(self.NUMBER_OF_FIELDS):
             if self.fields[i].owner is player:
                 last_own_index = i
-                    
+
         distance_to_opponent = (last_own_index - index) + 1
         return self.fields[index].beans >= distance_to_opponent
-        
+
     def has_valid_moves(self, player: Player):
         for i in range(self.NUMBER_OF_FIELDS):
             if self.can_seed_from(i, player):
@@ -91,7 +88,6 @@ class FieldCollection:
         if self.fields[index].beans < 1:
             return False
 
-       
         """
         The feeding rule says:
         When the opponent has no seeds, 
@@ -99,10 +95,9 @@ class FieldCollection:
         """
         if self.opponent_has_no_seeds(player):
             if not self.can_reach_opponent(index, player):
-                return False       
-                
-        return True
+                return False
 
+        return True
 
     def start_seeding_from(self, index: int, player: Player):
         """
@@ -128,7 +123,6 @@ class FieldCollection:
 
         return index
 
-
     def start_harvesting_from(self, index: int, player: Player):
         """
         Harvests beans starting from a given field.
@@ -144,17 +138,16 @@ class FieldCollection:
             index = self.get_previous_index(index)
 
         return yielded_beans
-    
+
     def would_starve_opponent(self, index: int, player: Player):
         """If harvesting would leave opponent with no seeds, you can not harvest"""
         total_opponent_seeds = 0
-        
+
         for field in self.fields:
             if field.owner is not player:
                 total_opponent_seeds += field.beans
-        
+
         return total_opponent_seeds - self.fields[index].beans == 0
-            
 
     def can_harvest_from(self, index: int, player: Player):
         """Checks if a player can harvest from a field"""
@@ -162,8 +155,10 @@ class FieldCollection:
         if self.fields[index].owner == player:
             return False
 
-
-        if self.fields[index].beans < self.MIN_BEANS_FOR_HARVES or self.fields[index].beans > self.MAX_BEANS_FOR_HARVES:
+        if (
+            self.fields[index].beans < self.MIN_BEANS_FOR_HARVES
+            or self.fields[index].beans > self.MAX_BEANS_FOR_HARVES
+        ):
             return False
 
         # todo implement starving check -done!
