@@ -1,4 +1,3 @@
-from typing import Self
 from game_logic.FieldCollection import FieldCollection
 from game_logic.Player import Player
 
@@ -20,7 +19,14 @@ class Board:
         self.bank[player] += harvested_beans
 
     def clone_deep(self):
-        raise NotImplementedError  # todo implement
+        player_1 = list(self.bank.keys())[0]
+        player_2 = list(self.bank.keys())[1]
+
+        clone = Board(player_1, player_2)
+        clone.field_collection = self.field_collection.clone()
+        clone.bank = self.bank.copy()
+
+        return clone
     
 
     

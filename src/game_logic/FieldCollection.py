@@ -1,3 +1,4 @@
+from typing import Self
 from game_logic.Field import Field
 from game_logic.Player import Player
 
@@ -11,7 +12,6 @@ class FieldCollection:
 
     def __init__(self, player_1: Player, player_2: Player):
         self.fields = self._create_fields(player_1, player_2)
-        self.bank = {player_1: 0, player_2: 0}
 
     def _create_fields(self, player_1: Player, player_2: Player) -> list[Field]:
         fields = []
@@ -28,6 +28,18 @@ class FieldCollection:
             fields.append(field)
 
         return fields
+
+    def clone(self) -> Self:
+        # Create empty object instead of using the initializer unnecessarily
+        clone = object.__new__(type(self))  
+
+        cloned_fields = []
+        for field in self.fields:
+            cloned_fields.append(field.clone())
+
+        clone.fields = cloned_fields
+
+        return clone
 
     def get_next_index(self, index: int, distance: int = 1):
         """Get the next field index (rotating counter clock wise)"""

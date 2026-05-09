@@ -20,6 +20,7 @@ dist/
 .idea/
 *.sublime-project
 *.sublime-workspace
+pyrightconfig.json
 
 # OS files
 .DS_Store

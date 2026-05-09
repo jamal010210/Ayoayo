@@ -8,3 +8,9 @@ class Field:
         self.owner = owner
         self.beans = Field.INITIAL_BEAN_COUNT
         self.bean_positions = [] 
+
+    def clone(self):
+        clone = Field(self.position_x, self.position_y, self.owner)
+        clone.beans = self.beans
+        clone.bean_positions = self.bean_positions
+        return clone
