@@ -5,7 +5,8 @@ import math
 
 pygame.init()
 game = Game()
-renderer = Renderer(game.board)
+renderer = Renderer(game)
+renderer.update_bean_positions()
 clock = pygame.time.Clock()
 
 while True:
@@ -18,11 +19,14 @@ while True:
             for field_index, x, y in renderer.hole_positions:
                 distance = math.sqrt((click_x - x)**2 + (click_y - y)**2)
                 if distance < renderer.HOLE_RADIUS:
-                    game.board.seed_from_field(field_index, game.current_player())
-                    game.end_turn()
+                    try:
+                        game.board.seed_from_field(field_index, game.current_player())
+                        game.end_turn()
+                        renderer.update_bean_positions()
+                    except ValueError:
+                        pass
+                
         
-                    
 
-    
     renderer.draw()
     clock.tick(60)

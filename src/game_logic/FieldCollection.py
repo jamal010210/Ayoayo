@@ -16,9 +16,7 @@ class FieldCollection:
     def _create_fields(self, player_1: Player, player_2: Player) -> list[Field]:
         fields = []
         for i in range(self.NUMBER_OF_FIELDS):
-            # todo: Set positions correctly
-            position_x = 0
-            position_y = 0
+        
 
             owner: Player
             if i < self.NUMBER_OF_FIELDS // 2:
@@ -26,7 +24,7 @@ class FieldCollection:
             else:
                 owner = player_2
 
-            field = Field(position_x, position_y, owner)
+            field = Field(owner)
             fields.append(field)
 
         return fields
@@ -39,17 +37,6 @@ class FieldCollection:
         """Get the previous field index (rotating clock wise)"""
         return (index - distance) % self.NUMBER_OF_FIELDS
 
-    def draw(self):
-        """Draws everything thats on the board"""
-
-        # todo: remove this console output code
-        half = self.NUMBER_OF_FIELDS // 2
-        top = " ".join(f"[{self.fields[i].beans}]" for i in range(self.NUMBER_OF_FIELDS - 1, half - 1, -1))
-        bottom = " ".join(f"[{self.fields[i].beans}]" for i in range(half))
-        print(top)
-        print(bottom)
-
-        # todo implement with pygame 
 
     def get_field_index(self, field: Field) -> int:
         """Return the board index of a field"""
@@ -77,7 +64,11 @@ class FieldCollection:
         distance_to_opponent = (last_own_index - index) + 1
         return self.fields[index].beans >= distance_to_opponent
         
-        
+    def has_valid_moves(self, player: Player):
+        for i in range(self.NUMBER_OF_FIELDS):
+            if self.can_seed_from(i, player):
+                return True
+        return False
 
     def can_seed_from(self, index: int, player: Player):
         """Returns whether a player can seed from a given field"""
@@ -88,7 +79,7 @@ class FieldCollection:
         if self.fields[index].beans < 1:
             return False
 
-        # Todo implement feeding rule
+       
         """
         The feeding rule says:
         When the opponent has no seeds, 
@@ -163,7 +154,7 @@ class FieldCollection:
         if self.fields[index].beans < self.MIN_BEANS_FOR_HARVES or self.fields[index].beans > self.MAX_BEANS_FOR_HARVES:
             return False
 
-        # todo implement starving check
+        # todo implement starving check -done!
         if self.would_starve_opponent(index, player):
             return False
 

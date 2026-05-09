@@ -22,9 +22,5 @@ class Board:
     def clone_deep(self):
         raise NotImplementedError  # todo implement
     
-    def draw(self):
-        self.field_collection.draw()
-        for player in self.bank:
-            print(f"{player.name}: {self.bank[player]}")
 
     
