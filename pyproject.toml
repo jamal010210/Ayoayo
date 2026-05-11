@@ -6,10 +6,17 @@ build-backend = "setuptools.build_meta"
 name = "ayoayo"
 version = "0.1.0"
 description = "Ayoayo board game project"
-dependencies = []
+dependencies = [
+    "pygame>=2.6.1",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[dependency-groups]
+dev = [
+    "pylint>=4.0.5",
+]

@@ -1,59 +1,117 @@
+import random
+import math
 import pygame
+
+# pylint: disable=no-member
+
+WINDOW_WIDTH = 1500
+WINDOW_HEIGHT = 800
+HOLE_RADIUS = 90
+BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
+BEAN_COLOR = (240, 220, 130)
+TEXT_COLOR = (255, 255, 255)
+BEAN_SIZE = 20
+
+
 
 
 class Renderer:
-    WINDOW_WIDTH = 800
-    WINDOW_HEIGHT = 400
-    HOLE_RADIUS = 40
-    BACKGROUND_COLOR = (139, 90, 43)   # brown wood color
-    HOLE_COLOR = (80, 40, 10)
-    BEAN_COLOR = (240, 220, 130)
-    TEXT_COLOR = (255, 255, 255)
-    
-    
-    def __init__(self, board):
+    """Renders the game board, holes, beans and win screen using pygame."""
+    # pylint: disable=too-many-instance-attributes
+    def __init__(self, game):
         pygame.init()
-        self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Ayo Game")
-        self.board = board
+        self.game = game
+        self.board = game.board
         self.font = pygame.font.SysFont(None, 36)
-        self.hole_positions = [] 
+        self.hole_image = pygame.image.load("img/hole.png")  # load assets first
+        self.bean_image = pygame.image.load("img/bean.png")
+        self.player1_wins_image = pygame.image.load("img/player_one_wins.png")
+        self.player2_wins_image = pygame.image.load("img/player_two_wins.png")
+        self.draw_image = pygame.image.load("img/draw.png")
+        self.bean_image = pygame.transform.scale(
+            self.bean_image, (BEAN_SIZE * 2, BEAN_SIZE * 2)
+        )
+        self.hole_image = pygame.transform.scale(
+            self.hole_image, (HOLE_RADIUS * 2, HOLE_RADIUS * 2)
+        )
+        self.hole_positions = []
         self.build_hole_position()
-        
 
     def draw(self):
-        self.screen.fill(self.BACKGROUND_COLOR)
+        """Draws the current game state on screen."""
+        self.screen.fill(BACKGROUND_COLOR)
         self._draw_fields()
+        self.draw_scores()
+        if self.game.winner:
+            self.draw_winner(self.game.winner)
         pygame.display.flip()
-        
+
     def build_hole_position(self):
+        """Calculates and stores the screen positions of all holes."""
         fields = self.board.field_collection.fields
         half = len(fields) // 2
 
         for i in range(half):
             # bottom row (player 1, fields 0-5)
-            x = 100 + i * 110
-            y = 300
+            x = 100 + i * 250
+            y = 600
             self.hole_positions.append((i, x, y))
-            
 
             # top row (player 2, fields 6-11)
-            x = 100 + (half - 1 - i) * 110  # reversed for player 2
-            y = 100
+            x = 100 + (half - 1 - i) * 250  # reversed for player 2
+            y = 200
             self.hole_positions.append((i + half, x, y))
-            
+
+    def update_bean_positions(self):
+        """Randomizes bean positions within each hole after a move."""
+        fields = self.board.field_collection.fields
+        for field_index, x, y in self.hole_positions:
+            field = fields[field_index]
+            field.bean_positions = []
+            for _ in range(field.beans):
+                angle = random.uniform(0, 2 * math.pi)
+                distance = random.uniform(0, HOLE_RADIUS - BEAN_SIZE)
+                bx = x + distance * math.cos(angle)
+                by = y + distance * math.sin(angle)
+                field.bean_positions.append((bx, by))
 
     def _draw_fields(self):
+        """Draws all holes and their beans on the screen."""
         fields = self.board.field_collection.fields
-
         for field_index, x, y in self.hole_positions:
-            self._draw_hole(x, y, fields[field_index].beans)
+            self._draw_hole(x, y, fields[field_index])
 
-           
-            
+    def _draw_hole(self, x, y, field):
+        """Draws a single hole image and its beans at the given position."""
+        self.screen.blit(self.hole_image, (x - HOLE_RADIUS, y - HOLE_RADIUS))
+        for bx, by in field.bean_positions:
+            self.screen.blit(
+                self.bean_image, (int(bx) - BEAN_SIZE, int(by) - BEAN_SIZE)
+            )
 
-    def _draw_hole(self, x, y, bean_count):
-            pygame.draw.circle(self.screen, self.HOLE_COLOR, (x, y), self.HOLE_RADIUS)
-            text = self.font.render(str(bean_count), True, self.TEXT_COLOR)
-            self.screen.blit(text, (x - 10, y - 10))
-        
+    def draw_winner(self, winner):
+        """Displays each player's current bean count on screen."""
+        image = None
+        if winner == "draw":
+            image = self.draw_image
+        elif winner == self.game.player_1:
+            image = self.player1_wins_image
+        elif winner == self.game.player_2:
+            image = self.player2_wins_image
+        if image:  # ← only blit if image was actually assigned
+            x = (WINDOW_WIDTH - image.get_width()) // 2
+            y = (WINDOW_HEIGHT - image.get_height()) // 2
+            self.screen.blit(image, (x, y))
+
+    def draw_scores(self):
+        """Displays each player's current bean count on screen."""
+        score_p1 = self.board.bank[self.game.player_1]
+        score_p2 = self.board.bank[self.game.player_2]
+
+        text_p1 = self.font.render(f"Player 1: {score_p1}", True, TEXT_COLOR)
+        text_p2 = self.font.render(f"Player 2: {score_p2}", True, TEXT_COLOR)
+
+        self.screen.blit(text_p1, (50, 20))
+        self.screen.blit(text_p2, (50, 50))
