@@ -38,6 +38,7 @@ class Renderer:
         )
         self.hole_positions = []
         self.build_hole_position()
+        self.mode_buttons = self._build_mode_buttons()
 
     def draw(self):
         """Draws the current game state on screen."""
@@ -47,6 +48,47 @@ class Renderer:
         if self.game.winner:
             self.draw_winner(self.game.winner)
         pygame.display.flip()
+
+    def _build_mode_buttons(self) -> dict[str, pygame.Rect]:
+        button_width = 400
+        button_height = 90
+        gap = 40
+        total_width = button_width * 2 + gap
+        x_start = (WINDOW_WIDTH - total_width) // 2
+        y_start = WINDOW_HEIGHT // 2 - button_height // 2
+
+        return {
+            "1": pygame.Rect(x_start, y_start, button_width, button_height),
+            "2": pygame.Rect(x_start + button_width + gap, y_start, button_width, button_height),
+        }
+
+    def draw_mode_selection(self):
+        """Draws the mode selection screen with two buttons."""
+        self.screen.fill(BACKGROUND_COLOR)
+        title_text = self.font.render("Choose mode:", True, TEXT_COLOR)
+        title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+        self.screen.blit(title_text, title_rect)
+
+        for mode_key, rect in self.mode_buttons.items():
+            pygame.draw.rect(self.screen, (80, 80, 80), rect)
+            pygame.draw.rect(self.screen, TEXT_COLOR, rect, 4)
+            label = (
+                "Human vs Human"
+                if mode_key == "1"
+                else "Human vs Bot"
+            )
+            label_text = self.font.render(label, True, TEXT_COLOR)
+            label_rect = label_text.get_rect(center=rect.center)
+            self.screen.blit(label_text, label_rect)
+
+        pygame.display.flip()
+
+    def get_mode_from_position(self, position: tuple[int, int]) -> str | None:
+        """Returns the selected mode key for a click position."""
+        for mode_key, rect in self.mode_buttons.items():
+            if rect.collidepoint(position):
+                return mode_key
+        return None
 
     def build_hole_position(self):
         """Calculates and stores the screen positions of all holes."""

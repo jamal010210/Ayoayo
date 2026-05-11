@@ -13,7 +13,7 @@ game = Game()
 renderer = Renderer(game)
 renderer.update_bean_positions()
 clock = pygame.time.Clock()
-mode = input("Choose mode: 1 = Human vs Human, 2 = Human vs Bot: ")
+mode = None
 
 while True:
     for event in pygame.event.get():
@@ -21,16 +21,19 @@ while True:
             pygame.quit()
             raise SystemExit
         if event.type == pygame.MOUSEBUTTONDOWN:
-            click_x, click_y = event.pos
-            for field_index, x, y in renderer.hole_positions:
-                distance = math.sqrt((click_x - x) ** 2 + (click_y - y) ** 2)
-                if distance < HOLE_RADIUS:
-                    try:
-                        game.board.seed_from_field(field_index, game.current_player())
-                        game.end_turn()
-                        renderer.update_bean_positions()
-                    except ValueError:
-                        pass
+            if mode is None:
+                mode = renderer.get_mode_from_position(event.pos) or mode
+            else:
+                click_x, click_y = event.pos
+                for field_index, x, y in renderer.hole_positions:
+                    distance = math.sqrt((click_x - x) ** 2 + (click_y - y) ** 2)
+                    if distance < HOLE_RADIUS:
+                        try:
+                            game.board.seed_from_field(field_index, game.current_player())
+                            game.end_turn()
+                            renderer.update_bean_positions()
+                        except ValueError:
+                            pass
 
     if mode == "2":
         if game.current_player() == game.player_2:
@@ -44,5 +47,8 @@ while True:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
                 
-    renderer.draw()
+    if mode is None:
+        renderer.draw_mode_selection()
+    else:
+        renderer.draw()
     clock.tick(60)
