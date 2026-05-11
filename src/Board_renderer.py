@@ -1,6 +1,7 @@
 import random
 import math
 import pygame
+from GameMode import GameMode
 
 # pylint: disable=no-member
 
@@ -11,6 +12,10 @@ BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
 BEAN_COLOR = (240, 220, 130)
 TEXT_COLOR = (255, 255, 255)
 BEAN_SIZE = 20
+MODE_BUTTON_LABELS: dict[GameMode, str] = {
+    GameMode.HUMAN_VS_HUMAN: "Human vs Human",
+    GameMode.HUMAN_VS_BOT: "Human vs Bot",
+}
 
 
 
@@ -50,7 +55,7 @@ class Renderer:
             self.draw_winner(self.game.winner)
         pygame.display.flip()
 
-    def _build_mode_buttons(self) -> dict[str, pygame.Rect]:
+    def _build_mode_buttons(self) -> dict[GameMode, pygame.Rect]:
         button_width = 400
         button_height = 90
         gap = 40
@@ -59,8 +64,12 @@ class Renderer:
         y_start = WINDOW_HEIGHT // 2 - button_height // 2
 
         return {
-            "1": pygame.Rect(x_start, y_start, button_width, button_height),
-            "2": pygame.Rect(x_start + button_width + gap, y_start, button_width, button_height),
+            GameMode.HUMAN_VS_HUMAN: pygame.Rect(
+                x_start, y_start, button_width, button_height
+            ),
+            GameMode.HUMAN_VS_BOT: pygame.Rect(
+                x_start + button_width + gap, y_start, button_width, button_height
+            ),
         }
 
     def draw_mode_selection(self):
@@ -73,25 +82,21 @@ class Renderer:
         for mode_key, rect in self.mode_buttons.items():
             pygame.draw.rect(self.screen, (80, 80, 80), rect)
             pygame.draw.rect(self.screen, TEXT_COLOR, rect, 4)
-            label = (
-                "Human vs Human"
-                if mode_key == "1"
-                else "Human vs Bot"
-            )
+            label = MODE_BUTTON_LABELS[mode_key]
             label_text = self.font.render(label, True, TEXT_COLOR)
             label_rect = label_text.get_rect(center=rect.center)
             self.screen.blit(label_text, label_rect)
 
         pygame.display.flip()
 
-    def get_mode_from_position(self, position: tuple[int, int]) -> str | None:
+    def get_mode_from_position(self, position: tuple[int, int]) -> GameMode | None:
         """Returns the selected mode key for a click position."""
         for mode_key, rect in self.mode_buttons.items():
             if rect.collidepoint(position):
                 return mode_key
         return None
 
-    def _build_depth_buttons(self) -> dict[str, pygame.Rect]:
+    def _build_depth_buttons(self) -> dict[int, pygame.Rect]:
         button_width = 280
         button_height = 90
         gap = 30
@@ -100,9 +105,9 @@ class Renderer:
         y_start = WINDOW_HEIGHT // 2 - button_height // 2
 
         return {
-            "1": pygame.Rect(x_start, y_start, button_width, button_height),
-            "2": pygame.Rect(x_start + button_width + gap, y_start, button_width, button_height),
-            "3": pygame.Rect(x_start + (button_width + gap) * 2, y_start, button_width, button_height),
+            1: pygame.Rect(x_start, y_start, button_width, button_height),
+            2: pygame.Rect(x_start + button_width + gap, y_start, button_width, button_height),
+            3: pygame.Rect(x_start + (button_width + gap) * 2, y_start, button_width, button_height)
         }
 
     def draw_depth_selection(self):
@@ -112,7 +117,7 @@ class Renderer:
         title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
         self.screen.blit(title_text, title_rect)
 
-        depth_labels = {"1": "Easy", "2": "Medium", "3": "Hard"}
+        depth_labels = {1: "Easy", 2: "Medium", 3: "Hard"}
         for depth_key, rect in self.depth_buttons.items():
             pygame.draw.rect(self.screen, (80, 80, 80), rect)
             pygame.draw.rect(self.screen, TEXT_COLOR, rect, 4)
@@ -122,7 +127,7 @@ class Renderer:
 
         pygame.display.flip()
 
-    def get_depth_from_position(self, position: tuple[int, int]) -> str | None:
+    def get_depth_from_position(self, position: tuple[int, int]) -> int | None:
         """Returns the selected depth key for a click position."""
         for depth_key, rect in self.depth_buttons.items():
             if rect.collidepoint(position):

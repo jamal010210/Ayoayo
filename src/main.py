@@ -3,8 +3,11 @@ import pygame
 from game_logic.Game import Game
 from Board_renderer import Renderer, HOLE_RADIUS
 from bot.bot_logic import choose_move, get_legal_moves
+from GameMode import GameMode
 
 # pylint: disable=no-member
+
+
 
 
 
@@ -13,8 +16,8 @@ game = Game()
 renderer = Renderer(game)
 renderer.update_bean_positions()
 clock = pygame.time.Clock()
-mode = None
-depth = None
+mode: GameMode | None = None
+bot_search_depth: int | None = None
 
 while True:
     for event in pygame.event.get():
@@ -23,9 +26,11 @@ while True:
             raise SystemExit
         if event.type == pygame.MOUSEBUTTONDOWN:
             if mode is None:
-                mode = renderer.get_mode_from_position(event.pos) or mode
-            elif mode == "2" and depth is None:
-                depth = renderer.get_depth_from_position(event.pos) or depth
+                selected_mode = renderer.get_mode_from_position(event.pos)
+                if selected_mode is not None:
+                    mode = selected_mode
+            elif mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
+                bot_search_depth = renderer.get_depth_from_position(event.pos) or bot_search_depth
             else:
                 click_x, click_y = event.pos
                 for field_index, x, y in renderer.hole_positions:
@@ -38,23 +43,24 @@ while True:
                         except ValueError:
                             pass
 
-    if mode == "2":
+
+    if mode == GameMode.HUMAN_VS_BOT:
         if game.current_player() == game.player_2:
 
             move = choose_move(
                 game.board,
                 game.current_player(),
                 get_legal_moves,
-                int(depth) if depth else 1
+                bot_search_depth if bot_search_depth else 1
             )
             if move is not None:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
                 renderer.update_bean_positions()
-                
+
     if mode is None:
         renderer.draw_mode_selection()
-    elif mode == "2" and depth is None:
+    elif mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
         renderer.draw_depth_selection()
     else:
         renderer.draw()
