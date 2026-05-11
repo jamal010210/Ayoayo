@@ -186,6 +186,24 @@ class Renderer:
             y = (WINDOW_HEIGHT - image.get_height()) // 2
             self.screen.blit(image, (x, y))
 
+    def draw_text_input(self, prompt: str, text: str):
+        """Draws a centered text input box for winner name entry."""
+        box_width = 900
+        box_height = 140
+        box_x = (WINDOW_WIDTH - box_width) // 2
+        box_y = WINDOW_HEIGHT - box_height - 60
+        box_rect = pygame.Rect(box_x, box_y, box_width, box_height)
+
+        pygame.draw.rect(self.screen, (20, 20, 20), box_rect)
+        pygame.draw.rect(self.screen, TEXT_COLOR, box_rect, 4)
+
+        prompt_surface = self.font.render(prompt, True, TEXT_COLOR)
+        self.screen.blit(prompt_surface, (box_x + 20, box_y + 18))
+
+        display_text = text if text else "Type winner name and press Enter..."
+        input_surface = self.font.render(display_text, True, TEXT_COLOR)
+        self.screen.blit(input_surface, (box_x + 20, box_y + 70))
+
     def draw_scores(self):
         """Displays each player's current bean count on screen."""
         score_p1 = self.board.bank[self.game.player_1]
