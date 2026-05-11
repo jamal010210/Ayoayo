@@ -1,7 +1,7 @@
 import math
 import pygame
 from game_logic.Game import Game
-from board_renderer import Renderer, HOLE_RADIUS
+from Board_renderer import Renderer, HOLE_RADIUS
 
 # pylint: disable=no-member
 
