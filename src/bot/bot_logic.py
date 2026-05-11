@@ -10,7 +10,7 @@ def get_legal_moves(board, player):
     return moves
 
 
-def choose_move(board, player, get_legal_moves):
+def choose_move(board, player, get_legal_moves,depth):
     legal_moves = get_legal_moves(board, player)
 
     best_move = None
@@ -23,7 +23,14 @@ def choose_move(board, player, get_legal_moves):
 
         clone.seed_from_field(move, player)
 
-        score = clone.bank[player] - clone.bank[opponent]
+        if depth <= 1:
+            score = clone.bank[player] - clone.bank[opponent]
+        else:
+            opponent_move = choose_move(clone, opponent, get_legal_moves, depth - 1)
+            if opponent_move is not None:
+                clone.seed_from_field(opponent_move, opponent)
+
+            score = clone.bank[player] - clone.bank[opponent]
 
         if score > best_score:
             best_score = score

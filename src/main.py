@@ -14,6 +14,7 @@ renderer = Renderer(game)
 renderer.update_bean_positions()
 clock = pygame.time.Clock()
 mode = None
+depth = None
 
 while True:
     for event in pygame.event.get():
@@ -23,6 +24,8 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if mode is None:
                 mode = renderer.get_mode_from_position(event.pos) or mode
+            elif mode == "2" and depth is None:
+                depth = renderer.get_depth_from_position(event.pos) or depth
             else:
                 click_x, click_y = event.pos
                 for field_index, x, y in renderer.hole_positions:
@@ -41,14 +44,18 @@ while True:
             move = choose_move(
                 game.board,
                 game.current_player(),
-                get_legal_moves
+                get_legal_moves,
+                int(depth) if depth else 1
             )
             if move is not None:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
+                renderer.update_bean_positions()
                 
     if mode is None:
         renderer.draw_mode_selection()
+    elif mode == "2" and depth is None:
+        renderer.draw_depth_selection()
     else:
         renderer.draw()
     clock.tick(60)
