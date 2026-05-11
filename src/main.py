@@ -2,6 +2,7 @@ import math
 import pygame
 from game_logic.Game import Game
 from Board_renderer import Renderer, HOLE_RADIUS
+from bot.bot_logic import choose_move, get_legal_moves
 
 # pylint: disable=no-member
 
@@ -12,6 +13,7 @@ game = Game()
 renderer = Renderer(game)
 renderer.update_bean_positions()
 clock = pygame.time.Clock()
+mode = input("Choose mode: 1 = Human vs Human, 2 = Human vs Bot: ")
 
 while True:
     for event in pygame.event.get():
@@ -30,5 +32,17 @@ while True:
                     except ValueError:
                         pass
 
+    if mode == "2":
+        if game.current_player() == game.player_2:
+
+            move = choose_move(
+                game.board,
+                game.current_player(),
+                get_legal_moves
+            )
+            if move is not None:
+                game.board.seed_from_field(move, game.current_player())
+                game.end_turn()
+                
     renderer.draw()
     clock.tick(60)
