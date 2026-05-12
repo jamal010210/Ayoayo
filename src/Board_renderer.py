@@ -196,8 +196,8 @@ class Renderer:
         score_p1 = self.board.bank[self.game.player_1]
         score_p2 = self.board.bank[self.game.player_2]
 
-        text_p1 = self.font.render(f"Player 1: {score_p1}", True, TEXT_COLOR)
-        text_p2 = self.font.render(f"Player 2: {score_p2}", True, TEXT_COLOR)
+        text_p1 = self.font.render(f"{self.game.player_1.name}: {score_p1}", True, TEXT_COLOR)
+        text_p2 = self.font.render(f"{self.game.player_2.name}: {score_p2}", True, TEXT_COLOR)
 
         self.screen.blit(text_p1, (50, 20))
         self.screen.blit(text_p2, (50, 50))
