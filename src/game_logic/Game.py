@@ -1,9 +1,11 @@
+from GameMode import GameMode
 from game_logic.Player import Player
 from game_logic.Board import Board
 
 
 class Game:
     def __init__(self):
+        self.mode: GameMode | None = None
         self.player_1 = Player("Player 1")
         self.player_2 = Player("Player 2")
         self.board = Board(self.player_1, self.player_2)
@@ -30,13 +32,15 @@ class Game:
         if self.winner is not None:
             return
 
+        if self.mode != GameMode.HUMAN_VS_HUMAN:
+            return
+
         self.board_history.pop()
         self.board = self.board_history[-1].clone_deep()
 
     def current_round(self) -> int:
         """Get the current round"""
         return len(self.board_history)
-
 
     def check_if_win(self):
         """Checks if theres a win/draw"""

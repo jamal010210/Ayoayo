@@ -4,6 +4,7 @@ import random
 import pygame
 
 from GameMode import GameMode
+from game_logic.Game import Game
 
 # pylint: disable=no-member
 
@@ -14,6 +15,10 @@ BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
 BEAN_COLOR = (240, 220, 130)
 TEXT_COLOR = (255, 255, 255)
 BEAN_SIZE = 20
+BUTTON_FILL_COLOR = (80, 80, 80)
+UNDO_BUTTON_WIDTH = 180
+UNDO_BUTTON_HEIGHT = 70
+UNDO_BUTTON_MARGIN = 30
 MODE_BUTTON_LABELS: dict[GameMode, str] = {
     GameMode.HUMAN_VS_HUMAN: "Human vs Human",
     GameMode.HUMAN_VS_BOT: "Human vs Bot",
@@ -24,12 +29,11 @@ class Renderer:
     """Renders the game board, holes, beans and win screen using pygame."""
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, game):
+    def __init__(self, game: Game):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Ayo Game")
         self.game = game
-        self.board = game.board
         self.font = pygame.font.SysFont(None, 36)
         self.hole_image = pygame.image.load("img/hole.png")  # load assets first
         self.bean_image = pygame.image.load("img/bean.png")
@@ -46,12 +50,15 @@ class Renderer:
         self.build_hole_position()
         self.mode_buttons = self._build_mode_buttons()
         self.depth_buttons = self._build_depth_buttons()
+        self.undo_button = self._build_undo_button()
 
     def draw(self):
         """Draws the current game state on screen."""
         self.screen.fill(BACKGROUND_COLOR)
         self._draw_fields()
         self.draw_scores()
+        if self.game.mode == GameMode.HUMAN_VS_HUMAN:
+            self.draw_undo_button()
         if self.game.winner:
             self.draw_winner(self.game.winner)
         pygame.display.flip()
@@ -156,9 +163,21 @@ class Renderer:
                 return depth_key
         return None
 
+    def _build_undo_button(self) -> pygame.Rect:
+        return pygame.Rect(
+            WINDOW_WIDTH - UNDO_BUTTON_WIDTH - UNDO_BUTTON_MARGIN,
+            WINDOW_HEIGHT - UNDO_BUTTON_HEIGHT - UNDO_BUTTON_MARGIN,
+            UNDO_BUTTON_WIDTH,
+            UNDO_BUTTON_HEIGHT,
+        )
+
+    def get_undo_button_collision(self, position: tuple[int, int]) -> bool:
+        """Returns whether a click position is inside the undo button."""
+        return self.undo_button.collidepoint(position)
+
     def build_hole_position(self):
         """Calculates and stores the screen positions of all holes."""
-        fields = self.board.field_collection.fields
+        fields = self.game.board.field_collection.fields
         half = len(fields) // 2
 
         for i in range(half):
@@ -174,7 +193,7 @@ class Renderer:
 
     def update_bean_positions(self):
         """Randomizes bean positions within each hole after a move."""
-        fields = self.board.field_collection.fields
+        fields = self.game.board.field_collection.fields
         for field_index, x, y in self.hole_positions:
             field = fields[field_index]
             field.bean_positions = []
@@ -187,7 +206,7 @@ class Renderer:
 
     def _draw_fields(self):
         """Draws all holes and their beans on the screen."""
-        fields = self.board.field_collection.fields
+        fields = self.game.board.field_collection.fields
         for field_index, x, y in self.hole_positions:
             self._draw_hole(x, y, fields[field_index])
 
@@ -215,8 +234,8 @@ class Renderer:
 
     def draw_scores(self) -> None:
         """Displays player names, scores, and highlights the active player."""
-        score_p1 = self.board.bank[self.game.player_1]
-        score_p2 = self.board.bank[self.game.player_2]
+        score_p1 = self.game.board.bank[self.game.player_1]
+        score_p2 = self.game.board.bank[self.game.player_2]
 
         current_player = self.game.current_player()
 
@@ -236,3 +255,11 @@ class Renderer:
 
         self.screen.blit(text_p2, (50, 20))
         self.screen.blit(text_p1, (50, 50))
+
+    def draw_undo_button(self) -> None:
+        """Draws the undo button in the bottom-right corner."""
+        pygame.draw.rect(self.screen, BUTTON_FILL_COLOR, self.undo_button)
+        pygame.draw.rect(self.screen, TEXT_COLOR, self.undo_button, 3)
+        undo_text = self.font.render("Undo", True, TEXT_COLOR)
+        undo_text_rect = undo_text.get_rect(center=self.undo_button.center)
+        self.screen.blit(undo_text, undo_text_rect)
