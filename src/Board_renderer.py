@@ -213,8 +213,8 @@ class Renderer:
             y = (WINDOW_HEIGHT - image.get_height()) // 2
             self.screen.blit(image, (x, y))
 
-    def draw_scores(self):
-        """Displays each player's current bean count on screen."""
+    def draw_scores(self) -> None:
+        """Displays player names, scores, and highlights the active player."""
         score_p1 = self.board.bank[self.game.player_1]
         score_p2 = self.board.bank[self.game.player_2]
 
