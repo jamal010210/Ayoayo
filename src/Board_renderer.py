@@ -1,6 +1,8 @@
-import random
 import math
+import random
+
 import pygame
+
 from GameMode import GameMode
 
 # pylint: disable=no-member
@@ -18,10 +20,9 @@ MODE_BUTTON_LABELS: dict[GameMode, str] = {
 }
 
 
-
-
 class Renderer:
     """Renders the game board, holes, beans and win screen using pygame."""
+
     # pylint: disable=too-many-instance-attributes
     def __init__(self, game):
         pygame.init()
@@ -68,7 +69,10 @@ class Renderer:
                 x_start, y_start, button_width, button_height
             ),
             GameMode.HUMAN_VS_BOT: pygame.Rect(
-                x_start + button_width + gap, y_start, button_width, button_height
+                x_start + button_width + gap,
+                y_start,
+                button_width,
+                button_height,
             ),
         }
 
@@ -76,7 +80,9 @@ class Renderer:
         """Draws the mode selection screen with two buttons."""
         self.screen.fill(BACKGROUND_COLOR)
         title_text = self.font.render("Choose mode:", True, TEXT_COLOR)
-        title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+        title_rect = title_text.get_rect(
+            center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3)
+        )
         self.screen.blit(title_text, title_rect)
 
         for mode_key, rect in self.mode_buttons.items():
@@ -89,7 +95,9 @@ class Renderer:
 
         pygame.display.flip()
 
-    def get_mode_from_position(self, position: tuple[int, int]) -> GameMode | None:
+    def get_mode_from_position(
+        self, position: tuple[int, int]
+    ) -> GameMode | None:
         """Returns the selected mode key for a click position."""
         for mode_key, rect in self.mode_buttons.items():
             if rect.collidepoint(position):
@@ -106,22 +114,36 @@ class Renderer:
 
         return {
             1: pygame.Rect(x_start, y_start, button_width, button_height),
-            2: pygame.Rect(x_start + button_width + gap, y_start, button_width, button_height),
-            3: pygame.Rect(x_start + (button_width + gap) * 2, y_start, button_width, button_height)
+            2: pygame.Rect(
+                x_start + button_width + gap,
+                y_start,
+                button_width,
+                button_height,
+            ),
+            3: pygame.Rect(
+                x_start + (button_width + gap) * 2,
+                y_start,
+                button_width,
+                button_height,
+            ),
         }
 
     def draw_depth_selection(self):
         """Draws the depth selection screen with three buttons."""
         self.screen.fill(BACKGROUND_COLOR)
         title_text = self.font.render("Choose difficulty:", True, TEXT_COLOR)
-        title_rect = title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
+        title_rect = title_text.get_rect(
+            center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3)
+        )
         self.screen.blit(title_text, title_rect)
 
         depth_labels = {1: "Easy", 2: "Medium", 3: "Hard"}
         for depth_key, rect in self.depth_buttons.items():
             pygame.draw.rect(self.screen, (80, 80, 80), rect)
             pygame.draw.rect(self.screen, TEXT_COLOR, rect, 4)
-            label_text = self.font.render(depth_labels[depth_key], True, TEXT_COLOR)
+            label_text = self.font.render(
+                depth_labels[depth_key], True, TEXT_COLOR
+            )
             label_rect = label_text.get_rect(center=rect.center)
             self.screen.blit(label_text, label_rect)
 
@@ -191,13 +213,26 @@ class Renderer:
             y = (WINDOW_HEIGHT - image.get_height()) // 2
             self.screen.blit(image, (x, y))
 
-    def draw_scores(self):
-        """Displays each player's current bean count on screen."""
+    def draw_scores(self) -> None:
+        """Displays player names, scores, and highlights the active player."""
         score_p1 = self.board.bank[self.game.player_1]
         score_p2 = self.board.bank[self.game.player_2]
 
-        text_p1 = self.font.render(f"{self.game.player_1.name}: {score_p1}", True, TEXT_COLOR)
-        text_p2 = self.font.render(f"{self.game.player_2.name}: {score_p2}", True, TEXT_COLOR)
+        current_player = self.game.current_player()
 
-        self.screen.blit(text_p1, (50, 20))
-        self.screen.blit(text_p2, (50, 50))
+        color_p1 = (
+            (0, 255, 0) if current_player == self.game.player_1 else TEXT_COLOR
+        )
+        color_p2 = (
+            (0, 255, 0) if current_player == self.game.player_2 else TEXT_COLOR
+        )
+
+        text_p1 = self.font.render(
+            f"{self.game.player_1.name}: {score_p1}", True, color_p1
+        )
+        text_p2 = self.font.render(
+            f"{self.game.player_2.name}: {score_p2}", True, color_p2
+        )
+
+        self.screen.blit(text_p2, (50, 20))
+        self.screen.blit(text_p1, (50, 50))
