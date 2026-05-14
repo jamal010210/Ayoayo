@@ -22,6 +22,9 @@ BUTTON_FILL_COLOR = (80, 80, 80)
 UNDO_BUTTON_WIDTH = 180
 UNDO_BUTTON_HEIGHT = 70
 UNDO_BUTTON_MARGIN = 30
+RETURN_BUTTON_WIDTH = 280
+RETURN_BUTTON_HEIGHT = 70
+RETURN_BUTTON_MARGIN = 30
 MODE_BUTTON_LABELS: dict[GameMode, str] = {
     GameMode.HUMAN_VS_HUMAN: "Human vs Human",
     GameMode.HUMAN_VS_BOT: "Human vs Bot",
@@ -54,12 +57,14 @@ class Renderer:
         self.mode_buttons = self._build_mode_buttons()
         self.depth_buttons = self._build_depth_buttons()
         self.undo_button = self._build_undo_button()
+        self.return_to_menu_button = self._build_return_to_menu_button()
 
     def draw(self):
         """Draws the current game state on screen."""
         self.screen.fill(BACKGROUND_COLOR)
         self._draw_fields()
         self.draw_scores()
+        self.draw_return_to_menu_button()
         if self.game.mode == GameMode.HUMAN_VS_HUMAN:
             self.draw_undo_button()
         if self.game.winner:
@@ -178,6 +183,18 @@ class Renderer:
         """Returns whether a click position is inside the undo button."""
         return self.undo_button.collidepoint(position)
 
+    def _build_return_to_menu_button(self) -> pygame.Rect:
+        return pygame.Rect(
+            RETURN_BUTTON_MARGIN,
+            WINDOW_HEIGHT - RETURN_BUTTON_HEIGHT - RETURN_BUTTON_MARGIN,
+            RETURN_BUTTON_WIDTH,
+            RETURN_BUTTON_HEIGHT,
+        )
+
+    def get_return_to_menu_button_collision(self, position: tuple[int, int]) -> bool:
+        """Returns whether a click position is inside the return-to-menu button."""
+        return self.return_to_menu_button.collidepoint(position)
+
     def build_hole_position(self):
         """Calculates and stores the screen positions of all holes."""
         fields = self.game.board.field_collection.fields
@@ -272,3 +289,11 @@ class Renderer:
         undo_text = self.font.render("Undo", True, TEXT_COLOR)
         undo_text_rect = undo_text.get_rect(center=self.undo_button.center)
         self.screen.blit(undo_text, undo_text_rect)
+
+    def draw_return_to_menu_button(self) -> None:
+        """Draws the return-to-menu button in the bottom-left corner."""
+        pygame.draw.rect(self.screen, BUTTON_FILL_COLOR, self.return_to_menu_button)
+        pygame.draw.rect(self.screen, TEXT_COLOR, self.return_to_menu_button, 3)
+        button_text = self.font.render("Return to menu", True, TEXT_COLOR)
+        button_text_rect = button_text.get_rect(center=self.return_to_menu_button.center)
+        self.screen.blit(button_text, button_text_rect)

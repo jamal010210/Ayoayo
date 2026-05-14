@@ -31,6 +31,13 @@ while True:
             elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
                 bot_search_depth = renderer.get_depth_from_position(event.pos) or bot_search_depth
             else:
+                if renderer.get_return_to_menu_button_collision(event.pos):
+                    game = Game()
+                    renderer.game = game
+                    renderer.update_bean_positions()
+                    bot_search_depth = None
+                    continue
+
                 if renderer.get_undo_button_collision(event.pos):
                     previous_round = game.current_round()
                     game.undo_turn()
