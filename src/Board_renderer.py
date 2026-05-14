@@ -11,6 +11,9 @@ from game_logic.Game import Game
 WINDOW_WIDTH = 1500
 WINDOW_HEIGHT = 800
 HOLE_RADIUS = 90
+TOP_ROW_Y = 200
+BOTTOM_ROW_Y = 520
+FIELD_COUNT_LABEL_OFFSET = 36
 BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
 BEAN_COLOR = (240, 220, 130)
 TEXT_COLOR = (255, 255, 255)
@@ -183,12 +186,12 @@ class Renderer:
         for i in range(half):
             # bottom row (player 1, fields 0-5)
             x = 100 + i * 250
-            y = 600
+            y = BOTTOM_ROW_Y
             self.hole_positions.append((i, x, y))
 
             # top row (player 2, fields 6-11)
             x = 100 + (half - 1 - i) * 250  # reversed for player 2
-            y = 200
+            y = TOP_ROW_Y
             self.hole_positions.append((i + half, x, y))
 
     def update_bean_positions(self):
@@ -205,10 +208,16 @@ class Renderer:
                 field.bean_positions.append((bx, by))
 
     def _draw_fields(self):
-        """Draws all holes and their beans on the screen."""
+        """Draws all holes, their beans, and each field's bean count."""
         fields = self.game.board.field_collection.fields
         for field_index, x, y in self.hole_positions:
-            self._draw_hole(x, y, fields[field_index])
+            field = fields[field_index]
+            self._draw_hole(x, y, field)
+            bean_count_text = self.font.render(str(field.beans), True, TEXT_COLOR)
+            bean_count_rect = bean_count_text.get_rect(
+                center=(x, y + HOLE_RADIUS + FIELD_COUNT_LABEL_OFFSET)
+            )
+            self.screen.blit(bean_count_text, bean_count_rect)
 
     def _draw_hole(self, x, y, field):
         """Draws a single hole image and its beans at the given position."""
