@@ -7,7 +7,7 @@ import persistence
 
 def test_save_and_get():
     persistence.init_db()
-    persistence.save_result("Alice", 25, 20)
+    persistence.save_result("Alice", "Bob", 25, 20)
     results = persistence.get_results()
     assert len(results) > 0
     print("Test passed: Result saved and retrieved")

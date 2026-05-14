@@ -18,6 +18,7 @@ clock = pygame.time.Clock()
 mode = None
 depth = None
 game_saved = False
+names_set = False
 
 while True:
     for event in pygame.event.get():
@@ -55,11 +56,22 @@ while True:
                 game.end_turn()
                 renderer.update_bean_positions()
 
+    if mode == "1" and not names_set:
+        player1_name = input("Enter name for Player 1: ").strip() or "Player 1"
+        player2_name = input("Enter name for Player 2: ").strip() or "Player 2"
+        game.set_player_names(player1_name, player2_name)
+        names_set = True
+    elif mode == "2" and not names_set:
+        player1_name = input("Enter your name: ").strip() or "Player 1"
+        game.set_player_names(player1_name, "Bot")
+        names_set = True
+
     if game.winner and not game_saved:
         winner_name = game.get_winner_name()
+        loser_name = game.get_loser_name()
         p1_score, p2_score = game.get_scores()
-        persistence.save_result(winner_name, p1_score, p2_score)
-        print(f"Game saved: Winner {winner_name}, Scores {p1_score}-{p2_score}")
+        persistence.save_result(winner_name, loser_name, p1_score, p2_score)
+        print(f"Game saved: Winner {winner_name}, Loser {loser_name}, Scores {p1_score}-{p2_score}")
         game_saved = True
                 
     if mode is None:
