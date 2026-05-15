@@ -326,16 +326,16 @@ class Renderer:
         name_text = self.font.render(self.player_names[field_key], True, TEXT_COLOR)
         self.screen.blit(name_text, (rect.left + 10, rect.top + 12))
 
-    def draw_name_input(self, mode: str):
+    def draw_name_input(self, mode: GameMode):
         """Draws the name input screen for player names."""
         self.screen.fill(BACKGROUND_COLOR)
         
-        title = "Enter Player Names:" if mode == "1" else "Enter Your Name:"
+        title = "Enter Player Names:" if mode == GameMode.HUMAN_VS_HUMAN else "Enter Your Name:"
         title_text = self.font.render(title, True, TEXT_COLOR)
         self.screen.blit(title_text, title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)))
         
         self._draw_name_field("player1", "Player 1:")
-        if mode == "1":
+        if mode == GameMode.HUMAN_VS_HUMAN:
             self._draw_name_field("player2", "Player 2:")
         
         instr_font = pygame.font.SysFont(None, 28)
@@ -344,21 +344,21 @@ class Renderer:
         
         pygame.display.flip()
 
-    def handle_name_input_click(self, position: tuple[int, int], mode: str) -> bool:
+    def handle_name_input_click(self, position: tuple[int, int], mode: GameMode) -> bool:
         """Handles mouse clicks on name input fields."""
         if self.name_input_fields["player1"].collidepoint(position):
             self.active_field = "player1"
-        elif mode == "1" and self.name_input_fields["player2"].collidepoint(position):
+        elif mode == GameMode.HUMAN_VS_HUMAN and self.name_input_fields["player2"].collidepoint(position):
             self.active_field = "player2"
         return False
 
-    def handle_name_input_key(self, event, mode: str) -> bool:
+    def handle_name_input_key(self, event, mode: GameMode) -> bool:
         """Handles keyboard input for name fields."""
         if event.type != pygame.KEYDOWN or not self.active_field:
             return False
         
         if event.key == pygame.K_RETURN:
-            if mode == "1":
+            if mode == GameMode.HUMAN_VS_HUMAN:
                 if self.active_field == "player1" and self.player_names["player1"]:
                     self.active_field = "player2"
                 elif self.active_field == "player2" and self.player_names["player2"]:
