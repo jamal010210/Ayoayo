@@ -2,6 +2,7 @@ import math
 import pygame
 from game_logic.Game import Game
 from Board_renderer import Renderer, HOLE_RADIUS
+import persistence
 from bot.bot_logic import choose_move, get_legal_moves
 from GameMode import GameMode
 
@@ -12,10 +13,13 @@ from GameMode import GameMode
 
 
 pygame.init()
+persistence.init_db()
 game = Game()
 renderer = Renderer(game)
 clock = pygame.time.Clock()
 bot_search_depth: int | None = None
+game_saved = False
+names_set = False
 
 while True:
     for event in pygame.event.get():
@@ -29,6 +33,8 @@ while True:
                     game.mode = selected_mode
             elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
                 bot_search_depth = renderer.get_depth_from_position(event.pos) or bot_search_depth
+            elif not names_set:
+                renderer.handle_name_input_click(event.pos, game.mode)
             else:
                 if renderer.get_return_to_menu_button_collision(event.pos):
                     game = Game()
@@ -50,6 +56,14 @@ while True:
                             game.end_turn()
                         except ValueError:
                             pass
+        if event.type == pygame.KEYDOWN and not names_set:
+            if renderer.handle_name_input_key(event, game.mode):
+                player1_name, player2_name = renderer.get_player_names()
+                if game.mode == GameMode.HUMAN_VS_HUMAN:
+                    game.set_player_names(player1_name, player2_name)
+                else:  # game.mode == GameMode.HUMAN_VS_BOT
+                    game.set_player_names(player1_name, "Bot")
+                names_set = True
 
 
     if game.mode == GameMode.HUMAN_VS_BOT:
@@ -65,10 +79,20 @@ while True:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
 
+    if game.winner and not game_saved:
+        winner_name = game.get_winner_name()
+        loser_name = game.get_loser_name()
+        p1_score, p2_score = game.get_scores()
+        persistence.save_result(winner_name, loser_name, p1_score, p2_score)
+        print(f"Game saved: Winner {winner_name}, Loser {loser_name}, Scores {p1_score}-{p2_score}")
+        game_saved = True
+
     if game.mode is None:
         renderer.draw_mode_selection()
     elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
         renderer.draw_depth_selection()
+    elif not names_set:
+        renderer.draw_name_input(game.mode)
     else:
         renderer.draw()
     clock.tick(60)

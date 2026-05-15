@@ -64,3 +64,27 @@ class Game:
                 self.winner = self.player_2
             else:
                 self.winner = "draw"
+
+    def get_winner_name(self):
+        if self.winner == "draw":
+            return "Draw"
+        elif self.winner:
+            return self.winner.name
+        return None
+
+    def get_loser_name(self):
+        if self.winner == "draw":
+            return "Draw"
+        elif self.winner == self.player_1:
+            return self.player_2.name
+        elif self.winner == self.player_2:
+            return self.player_1.name
+        return None
+
+    def get_scores(self):
+        return self.board.bank[self.player_1], self.board.bank[self.player_2]
+
+    def set_player_names(self, player_1_name: str, player_2_name: str):
+        self.player_1.name = player_1_name
+        self.player_2.name = player_2_name
+
