@@ -231,7 +231,10 @@ class Renderer:
         for dx, dy in field.bean_positions:
             self.screen.blit(
                 self.bean_image,
-                int(x + HOLE_RADIUS * dx - BEAN_RADIUS), int(y + HOLE_RADIUS * dy - BEAN_RADIUS)
+                (
+                    int(x + HOLE_RADIUS * dx - BEAN_RADIUS),
+                    int(y + HOLE_RADIUS * dy - BEAN_RADIUS),
+                ),
             )
 
     def draw_winner(self, winner):
