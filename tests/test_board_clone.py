@@ -19,10 +19,16 @@ def _create_board_with_custom_state() -> tuple[Board, Player, Player]:
 
     board.bank[player_1] = 9
     board.bank[player_2] = 4
-    board.field_collection.fields[0].beans = 10
-    board.field_collection.fields[5].beans = 1
-    board.field_collection.fields[6].beans = 7
-    board.field_collection.fields[11].beans = 2
+
+    for _ in range(0, 6):
+        board.field_collection.fields[0].add_bean()
+    board.field_collection.fields[5].remove_beans()
+    board.field_collection.fields[5].add_bean()
+    for _ in range(0, 3):
+        board.field_collection.fields[6].add_bean()
+    board.field_collection.fields[11].remove_beans()
+    for _ in range(0, 2):
+        board.field_collection.fields[11].add_bean()
 
     return board, player_1, player_2
 
@@ -43,7 +49,7 @@ def test_clone_deep_copies_full_board_state():
         board.field_collection.fields, clone.field_collection.fields
     ):
         assert cloned_field is not original_field
-        assert cloned_field.beans == original_field.beans
+        assert cloned_field.bean_positions == original_field.bean_positions
         assert cloned_field.owner is original_field.owner
 
 
@@ -53,11 +59,12 @@ def test_clone_deep_isolated_from_original_mutations():
     clone = board.clone_deep()
 
     board.bank[player_1] = 99
-    board.field_collection.fields[0].beans = 42
+    for _ in range(0, 42):
+        board.field_collection.fields[0].add_bean()
 
     assert clone.bank[player_1] == 9
     assert clone.bank[player_2] == 4
-    assert clone.field_collection.fields[0].beans == 10
+    assert clone.field_collection.fields[0].bean_count() == 10
 
 
 def test_clone_deep_original_isolated_from_clone_mutations():
@@ -66,8 +73,9 @@ def test_clone_deep_original_isolated_from_clone_mutations():
     clone = board.clone_deep()
 
     clone.bank[player_2] = 77
-    clone.field_collection.fields[6].beans = 13
+    for _ in range(0, 13):
+        board.field_collection.fields[6].add_bean()
 
     assert board.bank[player_1] == 9
     assert board.bank[player_2] == 4
-    assert board.field_collection.fields[6].beans == 7
+    assert board.field_collection.fields[6].bean_count() == 20

@@ -14,7 +14,6 @@ from GameMode import GameMode
 pygame.init()
 game = Game()
 renderer = Renderer(game)
-renderer.update_bean_positions()
 clock = pygame.time.Clock()
 bot_search_depth: int | None = None
 
@@ -34,15 +33,12 @@ while True:
                 if renderer.get_return_to_menu_button_collision(event.pos):
                     game = Game()
                     renderer.game = game
-                    renderer.update_bean_positions()
                     bot_search_depth = None
                     continue
 
                 if renderer.get_undo_button_collision(event.pos):
                     previous_round = game.current_round()
                     game.undo_turn()
-                    if game.current_round() != previous_round:
-                        renderer.update_bean_positions()
                     continue
 
                 click_x, click_y = event.pos
@@ -52,7 +48,6 @@ while True:
                         try:
                             game.board.seed_from_field(field_index, game.current_player())
                             game.end_turn()
-                            renderer.update_bean_positions()
                         except ValueError:
                             pass
 
@@ -69,7 +64,6 @@ while True:
             if move is not None:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
-                renderer.update_bean_positions()
 
     if game.mode is None:
         renderer.draw_mode_selection()
