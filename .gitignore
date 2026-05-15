@@ -7,6 +7,9 @@ __pycache__/
 venv/
 ENV/
 
+# Database 
+game_results.db
+
 # Distribution / packaging
 build/
 dist/
