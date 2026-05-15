@@ -56,6 +56,10 @@ class Renderer:
         self.build_hole_position()
         self.mode_buttons = self._build_mode_buttons()
         self.depth_buttons = self._build_depth_buttons()
+        self.name_input_fields = {}
+        self.player_names = {}
+        self.active_field = None
+        self._build_name_input_fields()
         self.undo_button = self._build_undo_button()
         self.return_to_menu_button = self._build_return_to_menu_button()
 
@@ -245,7 +249,7 @@ class Renderer:
             )
 
     def draw_winner(self, winner):
-        """Displays each player's current bean count on screen."""
+        """Displays winner"""
         image = None
         if winner == "draw":
             image = self.draw_image
@@ -297,3 +301,79 @@ class Renderer:
         button_text = self.font.render("Return to menu", True, TEXT_COLOR)
         button_text_rect = button_text.get_rect(center=self.return_to_menu_button.center)
         self.screen.blit(button_text, button_text_rect)
+
+    def _build_name_input_fields(self):
+        """Builds input field rectangles for player names."""
+        input_width, input_height, gap = 500, 60, 80
+        x_center, y_start = WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - input_height // 2
+        self.name_input_fields = {
+            "player1": pygame.Rect(x_center - input_width // 2, y_start - gap, input_width, input_height),
+            "player2": pygame.Rect(x_center - input_width // 2, y_start + gap, input_width, input_height),
+        }
+        self.player_names = {"player1": "", "player2": ""}
+
+    def _draw_name_field(self, field_key, label):
+        """Draw a single name input field."""
+        rect = self.name_input_fields[field_key]
+        is_active = self.active_field == field_key
+        
+        label_text = self.font.render(label, True, TEXT_COLOR)
+        self.screen.blit(label_text, (rect.left - 120, rect.top + 10))
+        
+        pygame.draw.rect(self.screen, (120, 120, 120) if is_active else (80, 80, 80), rect)
+        pygame.draw.rect(self.screen, (200, 200, 100) if is_active else TEXT_COLOR, rect, 3)
+        
+        name_text = self.font.render(self.player_names[field_key], True, TEXT_COLOR)
+        self.screen.blit(name_text, (rect.left + 10, rect.top + 12))
+
+    def draw_name_input(self, mode: str):
+        """Draws the name input screen for player names."""
+        self.screen.fill(BACKGROUND_COLOR)
+        
+        title = "Enter Player Names:" if mode == "1" else "Enter Your Name:"
+        title_text = self.font.render(title, True, TEXT_COLOR)
+        self.screen.blit(title_text, title_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)))
+        
+        self._draw_name_field("player1", "Player 1:")
+        if mode == "1":
+            self._draw_name_field("player2", "Player 2:")
+        
+        instr_font = pygame.font.SysFont(None, 28)
+        instr_text = instr_font.render("Click a field to enter name, Press ENTER to confirm", True, (200, 200, 200))
+        self.screen.blit(instr_text, instr_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT - 80)))
+        
+        pygame.display.flip()
+
+    def handle_name_input_click(self, position: tuple[int, int], mode: str) -> bool:
+        """Handles mouse clicks on name input fields."""
+        if self.name_input_fields["player1"].collidepoint(position):
+            self.active_field = "player1"
+        elif mode == "1" and self.name_input_fields["player2"].collidepoint(position):
+            self.active_field = "player2"
+        return False
+
+    def handle_name_input_key(self, event, mode: str) -> bool:
+        """Handles keyboard input for name fields."""
+        if event.type != pygame.KEYDOWN or not self.active_field:
+            return False
+        
+        if event.key == pygame.K_RETURN:
+            if mode == "1":
+                if self.active_field == "player1" and self.player_names["player1"]:
+                    self.active_field = "player2"
+                elif self.active_field == "player2" and self.player_names["player2"]:
+                    return True
+            else:
+                return bool(self.player_names["player1"])
+        elif event.key == pygame.K_BACKSPACE:
+            self.player_names[self.active_field] = self.player_names[self.active_field][:-1]
+        elif event.unicode.isprintable() and len(self.player_names[self.active_field]) < 20:
+            self.player_names[self.active_field] += event.unicode
+        return False
+
+    def get_player_names(self) -> tuple[str, str]:
+        """Returns the entered player names."""
+        return (
+            self.player_names["player1"].strip() or "Player 1",
+            self.player_names["player2"].strip() or "Player 2"
+        )
