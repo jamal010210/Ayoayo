@@ -1,6 +1,3 @@
-import math
-import random
-
 import pygame
 
 from GameMode import GameMode
@@ -17,7 +14,7 @@ FIELD_COUNT_LABEL_OFFSET = 36
 BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
 BEAN_COLOR = (240, 220, 130)
 TEXT_COLOR = (255, 255, 255)
-BEAN_SIZE = 20
+BEAN_RADIUS = 20
 BUTTON_FILL_COLOR = (80, 80, 80)
 UNDO_BUTTON_WIDTH = 180
 UNDO_BUTTON_HEIGHT = 70
@@ -47,7 +44,7 @@ class Renderer:
         self.player2_wins_image = pygame.image.load("img/player_two_wins.png")
         self.draw_image = pygame.image.load("img/draw.png")
         self.bean_image = pygame.transform.scale(
-            self.bean_image, (BEAN_SIZE * 2, BEAN_SIZE * 2)
+            self.bean_image, (BEAN_RADIUS * 2, BEAN_RADIUS * 2)
         )
         self.hole_image = pygame.transform.scale(
             self.hole_image, (HOLE_RADIUS * 2, HOLE_RADIUS * 2)
@@ -215,18 +212,6 @@ class Renderer:
             y = TOP_ROW_Y
             self.hole_positions.append((i + half, x, y))
 
-    def update_bean_positions(self):
-        """Randomizes bean positions within each hole after a move."""
-        fields = self.game.board.field_collection.fields
-        for field_index, x, y in self.hole_positions:
-            field = fields[field_index]
-            field.bean_positions = []
-            for _ in range(field.beans):
-                angle = random.uniform(0, 2 * math.pi)
-                distance = random.uniform(0, HOLE_RADIUS - BEAN_SIZE)
-                bx = x + distance * math.cos(angle)
-                by = y + distance * math.sin(angle)
-                field.bean_positions.append((bx, by))
 
     def _draw_fields(self):
         """Draws all holes, their beans, and each field's bean count."""
@@ -234,7 +219,7 @@ class Renderer:
         for field_index, x, y in self.hole_positions:
             field = fields[field_index]
             self._draw_hole(x, y, field)
-            bean_count_text = self.font.render(str(field.beans), True, TEXT_COLOR)
+            bean_count_text = self.font.render(str(field.bean_count()), True, TEXT_COLOR)
             bean_count_rect = bean_count_text.get_rect(
                 center=(x, y + HOLE_RADIUS + FIELD_COUNT_LABEL_OFFSET)
             )
@@ -243,9 +228,10 @@ class Renderer:
     def _draw_hole(self, x, y, field):
         """Draws a single hole image and its beans at the given position."""
         self.screen.blit(self.hole_image, (x - HOLE_RADIUS, y - HOLE_RADIUS))
-        for bx, by in field.bean_positions:
+        for dx, dy in field.bean_positions:
             self.screen.blit(
-                self.bean_image, (int(bx) - BEAN_SIZE, int(by) - BEAN_SIZE)
+                self.bean_image,
+                int(x + HOLE_RADIUS * dx - BEAN_RADIUS), int(y + HOLE_RADIUS * dy - BEAN_RADIUS)
             )
 
     def draw_winner(self, winner):
