@@ -30,6 +30,8 @@ while True:
                 mode = renderer.get_mode_from_position(event.pos) or mode
             elif mode == "2" and depth is None:
                 depth = renderer.get_depth_from_position(event.pos) or depth
+            elif not names_set:
+                renderer.handle_name_input_click(event.pos, mode)
             else:
                 click_x, click_y = event.pos
                 for field_index, x, y in renderer.hole_positions:
@@ -41,6 +43,14 @@ while True:
                             renderer.update_bean_positions()
                         except ValueError:
                             pass
+        if event.type == pygame.KEYDOWN and not names_set:
+            if renderer.handle_name_input_key(event, mode):
+                player1_name, player2_name = renderer.get_player_names()
+                if mode == "1":
+                    game.set_player_names(player1_name, player2_name)
+                else:  # mode == "2"
+                    game.set_player_names(player1_name, "Bot")
+                names_set = True
 
     if mode == "2":
         if game.current_player() == game.player_2:
@@ -56,16 +66,6 @@ while True:
                 game.end_turn()
                 renderer.update_bean_positions()
 
-    if mode == "1" and not names_set:
-        player1_name = input("Enter name for Player 1: ").strip() or "Player 1"
-        player2_name = input("Enter name for Player 2: ").strip() or "Player 2"
-        game.set_player_names(player1_name, player2_name)
-        names_set = True
-    elif mode == "2" and not names_set:
-        player1_name = input("Enter your name: ").strip() or "Player 1"
-        game.set_player_names(player1_name, "Bot")
-        names_set = True
-
     if game.winner and not game_saved:
         winner_name = game.get_winner_name()
         loser_name = game.get_loser_name()
@@ -78,6 +78,8 @@ while True:
         renderer.draw_mode_selection()
     elif mode == "2" and depth is None:
         renderer.draw_depth_selection()
+    elif not names_set:
+        renderer.draw_name_input(mode)
     else:
         renderer.draw()
     clock.tick(60)
