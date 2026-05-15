@@ -16,7 +16,6 @@ pygame.init()
 persistence.init_db()
 game = Game()
 renderer = Renderer(game)
-renderer.update_bean_positions()
 clock = pygame.time.Clock()
 bot_search_depth: int | None = None
 game_saved = False
@@ -40,15 +39,12 @@ while True:
                 if renderer.get_return_to_menu_button_collision(event.pos):
                     game = Game()
                     renderer.game = game
-                    renderer.update_bean_positions()
                     bot_search_depth = None
                     continue
 
                 if renderer.get_undo_button_collision(event.pos):
                     previous_round = game.current_round()
                     game.undo_turn()
-                    if game.current_round() != previous_round:
-                        renderer.update_bean_positions()
                     continue
 
                 click_x, click_y = event.pos
@@ -58,7 +54,6 @@ while True:
                         try:
                             game.board.seed_from_field(field_index, game.current_player())
                             game.end_turn()
-                            renderer.update_bean_positions()
                         except ValueError:
                             pass
         if event.type == pygame.KEYDOWN and not names_set:
@@ -83,7 +78,6 @@ while True:
             if move is not None:
                 game.board.seed_from_field(move, game.current_player())
                 game.end_turn()
-                renderer.update_bean_positions()
 
     if game.winner and not game_saved:
         winner_name = game.get_winner_name()

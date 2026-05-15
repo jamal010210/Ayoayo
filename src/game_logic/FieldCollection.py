@@ -55,11 +55,12 @@ class FieldCollection:
 
         raise ValueError("Field not found in list")
 
-    def opponent_has_no_seeds(self, player: Player):
+    def opponent_has_no_beans(self, player: Player):
+        """Returns true if the given player's opponent has no beans anymore."""
 
         for field in self.fields:
             if field.owner is not player:
-                if field.beans > 0:
+                if field.bean_count() > 0:
                     return False
         return True
 
@@ -70,7 +71,7 @@ class FieldCollection:
                 last_own_index = i
 
         distance_to_opponent = (last_own_index - index) + 1
-        return self.fields[index].beans >= distance_to_opponent
+        return self.fields[index].bean_count() >= distance_to_opponent
 
     def has_valid_moves(self, player: Player):
         for i in range(self.NUMBER_OF_FIELDS):
@@ -84,15 +85,15 @@ class FieldCollection:
         if self.fields[index].owner is not player:
             return False
 
-        if self.fields[index].beans < 1:
+        if self.fields[index].bean_count() < 1:
             return False
 
-        """
-        The feeding rule says:
-        When the opponent has no seeds, 
-        only let me take the seeds from one of my field with which I can reach opponents field to feed him.
-        """
-        if self.opponent_has_no_seeds(player):
+
+        # The feeding rule says:
+        # When the opponent has no seeds, only let me take the seeds
+        # from one of my field with which I can reach opponents field to feed him.
+
+        if self.opponent_has_no_beans(player):
             if not self.can_reach_opponent(index, player):
                 return False
 
@@ -109,15 +110,14 @@ class FieldCollection:
         if not self.can_seed_from(index, player):
             raise ValueError(f"{player.name} can not seed from field {index}")
 
-        beans = self.fields[index].beans
-        self.fields[index].beans = 0
+        beans = self.fields[index].remove_beans()
 
         while beans > 0:
             index = self.get_next_index(index)
             if self.skip_rule_applies(index, player):
                 continue
 
-            self.fields[index].beans += 1
+            self.fields[index].add_bean()
             beans -= 1
 
         return index
@@ -132,21 +132,20 @@ class FieldCollection:
         yielded_beans = 0
 
         while self.can_harvest_from(index, player):
-            yielded_beans += self.fields[index].beans
-            self.fields[index].beans = 0
+            yielded_beans += self.fields[index].remove_beans()
             index = self.get_previous_index(index)
 
         return yielded_beans
 
     def would_starve_opponent(self, index: int, player: Player):
-        """If harvesting would leave opponent with no seeds, you can not harvest"""
-        total_opponent_seeds = 0
+        """If harvesting would leave opponent with no beans, you can not harvest"""
+        total_opponent_beans = 0
 
         for field in self.fields:
             if field.owner is not player:
-                total_opponent_seeds += field.beans
+                total_opponent_beans += field.bean_count()
 
-        return total_opponent_seeds - self.fields[index].beans == 0
+        return total_opponent_beans - self.fields[index].bean_count() == 0
 
     def can_harvest_from(self, index: int, player: Player):
         """Checks if a player can harvest from a field"""
@@ -155,8 +154,8 @@ class FieldCollection:
             return False
 
         if (
-            self.fields[index].beans < self.MIN_BEANS_FOR_HARVES
-            or self.fields[index].beans > self.MAX_BEANS_FOR_HARVES
+            self.fields[index].bean_count() < self.MIN_BEANS_FOR_HARVES
+            or self.fields[index].bean_count() > self.MAX_BEANS_FOR_HARVES
         ):
             return False
 
@@ -172,7 +171,7 @@ class FieldCollection:
         While seeding on a players own first field it is skipped when it already has a certain amount of beans
         """
         return (
-            self.fields[index].beans >= self.SKIP_RULE_NUMBER
+            self.fields[index].bean_count() >= self.SKIP_RULE_NUMBER
             and index % (self.NUMBER_OF_FIELDS // 2) == 0
             and self.fields[index].owner is player
         )
