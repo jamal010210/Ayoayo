@@ -20,6 +20,9 @@ clock = pygame.time.Clock()
 bot_search_depth: int | None = None
 game_saved = False
 names_set = False
+history_mode = False
+history_results: list[tuple] | None = None
+history_error: str | None = None
 
 while True:
     for event in pygame.event.get():
@@ -28,9 +31,34 @@ while True:
             raise SystemExit
         if event.type == pygame.MOUSEBUTTONDOWN:
             if game.mode is None:
-                selected_mode = renderer.get_mode_from_position(event.pos)
-                if selected_mode is not None:
-                    game.mode = selected_mode
+                if history_mode:
+                    if renderer.get_return_to_menu_button_collision(event.pos):
+                        history_mode = False
+                    else:
+                        clicked_suggestion = renderer.get_history_suggestion_at_position(event.pos)
+                        if clicked_suggestion:
+                            renderer.history_player_text = clicked_suggestion[1]
+                            renderer.history_suggestions = []
+                            player = persistence.get_player_by_name(clicked_suggestion[1])
+                            if player:
+                                history_results = persistence.get_player_history(player[0])
+                                history_error = None
+                            else:
+                                history_error = f"No exact player found for '{clicked_suggestion[1]}'."
+                                history_results = []
+                        else:
+                            renderer.handle_history_input_click(event.pos)
+                else:
+                    selected_mode = renderer.get_mode_from_position(event.pos)
+                    if selected_mode is not None:
+                        game.mode = selected_mode
+                    elif renderer.get_history_button_collision(event.pos):
+                        history_mode = True
+                        renderer.history_player_text = ""
+                        renderer.history_input_active = False
+                        renderer.history_suggestions = []
+                        history_results = None
+                        history_error = None
             elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
                 bot_search_depth = renderer.get_depth_from_position(event.pos) or bot_search_depth
             elif not names_set:
@@ -40,6 +68,8 @@ while True:
                     game = Game()
                     renderer.game = game
                     bot_search_depth = None
+                    game_saved = False
+                    names_set = False
                     continue
 
                 if renderer.get_undo_button_collision(event.pos):
@@ -56,14 +86,30 @@ while True:
                             game.end_turn()
                         except ValueError:
                             pass
-        if event.type == pygame.KEYDOWN and not names_set:
-            if renderer.handle_name_input_key(event, game.mode):
-                player1_name, player2_name = renderer.get_player_names()
-                if game.mode == GameMode.HUMAN_VS_HUMAN:
-                    game.set_player_names(player1_name, player2_name)
-                else:  # game.mode == GameMode.HUMAN_VS_BOT
-                    game.set_player_names(player1_name, "Bot")
-                names_set = True
+        if event.type == pygame.KEYDOWN:
+            if history_mode:
+                if renderer.handle_history_input_key(event):
+                    player_name = renderer.get_history_input_value()
+                    if not player_name:
+                        history_error = "Enter a player name."
+                        history_results = []
+                    else:
+                        player = persistence.get_player_by_name(player_name)
+                        if not player:
+                            history_error = f"No exact player found for '{player_name}'."
+                            history_results = []
+                        else:
+                            history_results = persistence.get_player_history(player[0])
+                            history_error = None
+                renderer.history_suggestions = persistence.get_player_suggestions(renderer.get_history_input_value())
+            elif not names_set:
+                if renderer.handle_name_input_key(event, game.mode):
+                    player1_name, player2_name = renderer.get_player_names()
+                    if game.mode == GameMode.HUMAN_VS_HUMAN:
+                        game.set_player_names(player1_name, player2_name)
+                    else:  # game.mode == GameMode.HUMAN_VS_BOT
+                        game.set_player_names(player1_name, "Bot")
+                    names_set = True
 
 
     if game.mode == GameMode.HUMAN_VS_BOT:
@@ -83,12 +129,22 @@ while True:
         winner_name = game.get_winner_name()
         loser_name = game.get_loser_name()
         p1_score, p2_score = game.get_scores()
-        persistence.save_result(winner_name, loser_name, p1_score, p2_score)
+        persistence.save_result(
+            game.player_1.name,
+            game.player_2.name,
+            winner_name,
+            loser_name,
+            p1_score,
+            p2_score,
+        )
         print(f"Game saved: Winner {winner_name}, Loser {loser_name}, Scores {p1_score}-{p2_score}")
         game_saved = True
 
     if game.mode is None:
-        renderer.draw_mode_selection()
+        if history_mode:
+            renderer.draw_history_screen(history_results, history_error)
+        else:
+            renderer.draw_mode_selection()
     elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
         renderer.draw_depth_selection()
     elif not names_set:
