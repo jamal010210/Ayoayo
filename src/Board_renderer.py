@@ -8,8 +8,8 @@ from game_logic.Game import Game
 WINDOW_WIDTH = 1500
 WINDOW_HEIGHT = 800
 HOLE_RADIUS = 90
-TOP_ROW_Y = 200
-BOTTOM_ROW_Y = 520
+TOP_ROW_Y = 270
+BOTTOM_ROW_Y = 550
 FIELD_COUNT_LABEL_OFFSET = 36
 BACKGROUND_COLOR = (39, 35, 24)  # brown wood color
 BEAN_COLOR = (240, 220, 130)
@@ -46,6 +46,9 @@ class Renderer:
         pygame.display.set_caption("Ayo Game")
         self.game = game
         self.font = pygame.font.SysFont(None, 36)
+        self.header_image = pygame.image.load("img/header.png")
+        self.undo_button_image = pygame.image.load("img/Undo.png")
+        self.home_button_image = pygame.image.load("img/home.png")
         self.hole_image = pygame.image.load("img/hole.png")  # load assets first
         self.bean_image = pygame.image.load("img/bean.png")
         self.player1_wins_image = pygame.image.load("img/player_one_wins.png")
@@ -77,6 +80,8 @@ class Renderer:
     def draw(self):
         """Draws the current game state on screen."""
         self.screen.fill(BACKGROUND_COLOR)
+        title_rect = self.header_image.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 13))
+        self.screen.blit(self.header_image, title_rect)
         self._draw_fields()
         self.draw_scores()
         self.draw_return_to_menu_button()
@@ -193,11 +198,12 @@ class Renderer:
         return None
 
     def _build_undo_button(self) -> pygame.Rect:
+        undo_w, undo_h = self.undo_button_image.get_size()
+        menu_w, _ = self.home_button_image.get_size()
         return pygame.Rect(
-            WINDOW_WIDTH - UNDO_BUTTON_WIDTH - UNDO_BUTTON_MARGIN,
-            WINDOW_HEIGHT - UNDO_BUTTON_HEIGHT - UNDO_BUTTON_MARGIN,
-            UNDO_BUTTON_WIDTH,
-            UNDO_BUTTON_HEIGHT,
+            WINDOW_WIDTH - undo_w - menu_w - 120,
+            WINDOW_HEIGHT // 13 - undo_h // 2,
+            undo_w, undo_h
         )
 
     def get_undo_button_collision(self, position: tuple[int, int]) -> bool:
@@ -205,11 +211,11 @@ class Renderer:
         return self.undo_button.collidepoint(position)
 
     def _build_return_to_menu_button(self) -> pygame.Rect:
+        menu_w, menu_h = self.home_button_image.get_size()
         return pygame.Rect(
-            RETURN_BUTTON_MARGIN,
-            WINDOW_HEIGHT - RETURN_BUTTON_HEIGHT - RETURN_BUTTON_MARGIN,
-            RETURN_BUTTON_WIDTH,
-            RETURN_BUTTON_HEIGHT,
+            WINDOW_WIDTH - menu_w - 90,
+            WINDOW_HEIGHT // 13 - menu_h // 2,
+            menu_w, menu_h
         )
 
     def get_return_to_menu_button_collision(self, position: tuple[int, int]) -> bool:
@@ -376,12 +382,12 @@ class Renderer:
 
         for i in range(half):
             # bottom row (player 1, fields 0-5)
-            x = 100 + i * 250
+            x = 125 + i * 250
             y = BOTTOM_ROW_Y
             self.hole_positions.append((i, x, y))
 
             # top row (player 2, fields 6-11)
-            x = 100 + (half - 1 - i) * 250  # reversed for player 2
+            x = 125 + (half - 1 - i) * 250  # reversed for player 2
             y = TOP_ROW_Y
             self.hole_positions.append((i + half, x, y))
 
@@ -404,10 +410,7 @@ class Renderer:
         for dx, dy in field.bean_positions:
             self.screen.blit(
                 self.bean_image,
-                (
-                    int(x + HOLE_RADIUS * dx - BEAN_RADIUS),
-                    int(y + HOLE_RADIUS * dy - BEAN_RADIUS),
-                ),
+                (int(x + HOLE_RADIUS * dx - BEAN_RADIUS), int(y + HOLE_RADIUS * dy - BEAN_RADIUS))
             )
 
     def draw_winner(self, winner):
@@ -432,10 +435,10 @@ class Renderer:
         current_player = self.game.current_player()
 
         color_p1 = (
-            (0, 255, 0) if current_player == self.game.player_1 else TEXT_COLOR
+            (246, 204, 132) if current_player == self.game.player_1 else TEXT_COLOR
         )
         color_p2 = (
-            (0, 255, 0) if current_player == self.game.player_2 else TEXT_COLOR
+            (246, 204, 132) if current_player == self.game.player_2 else TEXT_COLOR
         )
 
         text_p1 = self.font.render(
@@ -450,19 +453,12 @@ class Renderer:
 
     def draw_undo_button(self) -> None:
         """Draws the undo button in the bottom-right corner."""
-        pygame.draw.rect(self.screen, BUTTON_FILL_COLOR, self.undo_button)
-        pygame.draw.rect(self.screen, TEXT_COLOR, self.undo_button, 3)
-        undo_text = self.font.render("Undo", True, TEXT_COLOR)
-        undo_text_rect = undo_text.get_rect(center=self.undo_button.center)
-        self.screen.blit(undo_text, undo_text_rect)
+        self.screen.blit(self.undo_button_image, self.undo_button.topleft)
 
     def draw_return_to_menu_button(self) -> None:
         """Draws the return-to-menu button in the bottom-left corner."""
-        pygame.draw.rect(self.screen, BUTTON_FILL_COLOR, self.return_to_menu_button)
-        pygame.draw.rect(self.screen, TEXT_COLOR, self.return_to_menu_button, 3)
-        button_text = self.font.render("Return to menu", True, TEXT_COLOR)
-        button_text_rect = button_text.get_rect(center=self.return_to_menu_button.center)
-        self.screen.blit(button_text, button_text_rect)
+        self.screen.blit(self.home_button_image, self.return_to_menu_button.topleft)
+
 
     def _build_name_input_fields(self):
         """Builds input field rectangles for player names."""
