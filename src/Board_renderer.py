@@ -22,6 +22,14 @@ UNDO_BUTTON_MARGIN = 30
 RETURN_BUTTON_WIDTH = 280
 RETURN_BUTTON_HEIGHT = 70
 RETURN_BUTTON_MARGIN = 30
+HISTORY_BUTTON_WIDTH = 320
+HISTORY_BUTTON_HEIGHT = 90
+HISTORY_BUTTON_MARGIN = 40
+PLAYER_LIST_BUTTON_WIDTH = 320
+PLAYER_LIST_BUTTON_HEIGHT = 90
+PLAYER_LIST_BUTTON_MARGIN = 40
+HISTORY_INPUT_WIDTH = 360
+HISTORY_INPUT_HEIGHT = 60
 MODE_BUTTON_LABELS: dict[GameMode, str] = {
     GameMode.HUMAN_VS_HUMAN: "Human vs Human",
     GameMode.HUMAN_VS_BOT: "Human vs Bot",
@@ -57,6 +65,12 @@ class Renderer:
         self.player_names = {}
         self.active_field = None
         self._build_name_input_fields()
+        self.history_button = self._build_history_button()
+        self.history_input_field = self._build_history_input_field()
+        self.history_player_text = ""
+        self.history_input_active = False
+        self.history_suggestions: list[tuple] = []
+        self.history_suggestion_rects: list[tuple[pygame.Rect, tuple]] = []
         self.undo_button = self._build_undo_button()
         self.return_to_menu_button = self._build_return_to_menu_button()
 
@@ -108,6 +122,12 @@ class Renderer:
             label_text = self.font.render(label, True, TEXT_COLOR)
             label_rect = label_text.get_rect(center=rect.center)
             self.screen.blit(label_text, label_rect)
+
+        pygame.draw.rect(self.screen, (80, 80, 80), self.history_button)
+        pygame.draw.rect(self.screen, TEXT_COLOR, self.history_button, 4)
+        history_label = self.font.render("Player History", True, TEXT_COLOR)
+        history_label_rect = history_label.get_rect(center=self.history_button.center)
+        self.screen.blit(history_label, history_label_rect)
 
         pygame.display.flip()
 
@@ -195,6 +215,159 @@ class Renderer:
     def get_return_to_menu_button_collision(self, position: tuple[int, int]) -> bool:
         """Returns whether a click position is inside the return-to-menu button."""
         return self.return_to_menu_button.collidepoint(position)
+
+    def get_history_button_collision(self, position: tuple[int, int]) -> bool:
+        """Returns whether a click position is inside the history button."""
+        return self.history_button.collidepoint(position)
+
+    def _build_history_button(self) -> pygame.Rect:
+        x = (WINDOW_WIDTH - HISTORY_BUTTON_WIDTH) // 2
+        y = WINDOW_HEIGHT // 2 + HISTORY_BUTTON_HEIGHT + 80
+        return pygame.Rect(x, y, HISTORY_BUTTON_WIDTH, HISTORY_BUTTON_HEIGHT)
+
+    def _build_history_input_field(self) -> pygame.Rect:
+        x = (WINDOW_WIDTH - HISTORY_INPUT_WIDTH) // 2
+        y = WINDOW_HEIGHT // 2 - HISTORY_INPUT_HEIGHT // 2
+        return pygame.Rect(x, y, HISTORY_INPUT_WIDTH, HISTORY_INPUT_HEIGHT)
+
+    def draw_history_screen(self, history_rows: list[tuple] | None, error_text: str | None = None) -> None:
+        """Draws the player history lookup screen."""
+        self.screen.fill(BACKGROUND_COLOR)
+
+        title_text = self.font.render("Player History Lookup", True, TEXT_COLOR)
+        self.screen.blit(title_text, title_text.get_rect(center=(WINDOW_WIDTH // 2, 90)))
+
+        label_text = self.font.render("Player Name:", True, TEXT_COLOR)
+        self.screen.blit(
+            label_text,
+            (self.history_input_field.left - 170, self.history_input_field.top + 12),
+        )
+
+        pygame.draw.rect(self.screen, (120, 120, 120) if self.history_input_active else (80, 80, 80), self.history_input_field)
+        pygame.draw.rect(self.screen, (200, 200, 100) if self.history_input_active else TEXT_COLOR, self.history_input_field, 3)
+
+        entry_text = self.history_player_text or "<type player name>"
+        entry_color = TEXT_COLOR if self.history_player_text else (200, 200, 200)
+        player_text = self.font.render(entry_text, True, entry_color)
+        self.screen.blit(player_text, (self.history_input_field.left + 10, self.history_input_field.top + 12))
+
+        instr_font = pygame.font.SysFont(None, 24)
+        instr_text = instr_font.render("Type name and press ENTER to load exact history.", True, (200, 200, 200))
+        self.screen.blit(instr_text, instr_text.get_rect(center=(WINDOW_WIDTH // 2, self.history_input_field.bottom + 40)))
+
+        if error_text:
+            error_render = self.font.render(error_text, True, (255, 100, 100))
+            self.screen.blit(error_render, (WINDOW_WIDTH // 2 - error_render.get_width() // 2, self.history_input_field.bottom + 90))
+
+        self.history_suggestion_rects = []
+        suggestion_start = self.history_input_field.bottom + 90
+        if self.history_suggestions:
+            suggest_title = instr_font.render("Suggestions:", True, TEXT_COLOR)
+            self.screen.blit(suggest_title, (80, suggestion_start))
+            for idx, suggestion in enumerate(self.history_suggestions[:5]):
+                suggestion_y = suggestion_start + 28 + idx * 34
+                rect = pygame.Rect(self.history_input_field.left, suggestion_y, HISTORY_INPUT_WIDTH, 30)
+                pygame.draw.rect(self.screen, (60, 60, 60), rect)
+                pygame.draw.rect(self.screen, TEXT_COLOR, rect, 1)
+                suggestion_text = instr_font.render(
+                    f"{suggestion[1]} (ID {suggestion[0]})",
+                    True,
+                    (220, 220, 220),
+                )
+                self.screen.blit(suggestion_text, (rect.left + 8, rect.top + 5))
+                self.history_suggestion_rects.append((rect, suggestion))
+            rows_start = suggestion_start + 28 + len(self.history_suggestions[:5]) * 34 + 10
+        else:
+            rows_start = self.history_input_field.bottom + 120
+
+        if history_rows is not None and not error_text:
+            if len(history_rows) == 0:
+                empty_text = self.font.render("No games found for this player.", True, TEXT_COLOR)
+                self.screen.blit(empty_text, empty_text.get_rect(center=(WINDOW_WIDTH // 2, rows_start)))
+            else:
+                for idx, row in enumerate(history_rows[:8]):
+                    game_id, _, _, player1_name, player2_name, winner, loser, player1_score, player2_score, timestamp = row
+                    summary = f"Game {game_id}: {player1_name} {player1_score}-{player2_score} {player2_name} | Winner: {winner}"
+                    row_text = instr_font.render(summary, True, TEXT_COLOR)
+                    self.screen.blit(row_text, (80, rows_start + idx * 30))
+                if len(history_rows) > 8:
+                    more_text = instr_font.render(
+                        f"...and {len(history_rows) - 8} more games.", True, TEXT_COLOR
+                    )
+                    self.screen.blit(more_text, (80, rows_start + 8 * 30))
+
+        self.draw_return_to_menu_button()
+        pygame.display.flip()
+
+    def draw_player_list_screen(self, player_rows: list[tuple] | None) -> None:
+        """Draws the player list screen."""
+        self.screen.fill(BACKGROUND_COLOR)
+
+        title_text = self.font.render("Player List", True, TEXT_COLOR)
+        self.screen.blit(title_text, title_text.get_rect(center=(WINDOW_WIDTH // 2, 80)))
+
+        instr_font = pygame.font.SysFont(None, 24)
+        header_text = instr_font.render("ID  Name                W   L   D   Games", True, TEXT_COLOR)
+        self.screen.blit(header_text, (80, 150))
+
+        if player_rows is None:
+            empty_text = self.font.render("No player data loaded.", True, TEXT_COLOR)
+            self.screen.blit(empty_text, empty_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+        elif len(player_rows) == 0:
+            empty_text = self.font.render("No players found.", True, TEXT_COLOR)
+            self.screen.blit(empty_text, empty_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+        else:
+            row_y = 190
+            for row in player_rows[:12]:
+                player_id, name, wins, losses, draws, games_played, last_played = row
+                name_display = name[:18].ljust(18)
+                row_text = instr_font.render(
+                    f"{player_id:<3} {name_display} {wins:<3} {losses:<3} {draws:<3} {games_played:<5}",
+                    True,
+                    TEXT_COLOR,
+                )
+                self.screen.blit(row_text, (80, row_y))
+                row_y += 30
+            if len(player_rows) > 12:
+                more_text = instr_font.render(
+                    f"...and {len(player_rows) - 12} more players.", True, TEXT_COLOR
+                )
+                self.screen.blit(more_text, (80, row_y))
+
+        self.draw_return_to_menu_button()
+        pygame.display.flip()
+
+    def handle_history_input_click(self, position: tuple[int, int]) -> bool:
+        """Handles clicks on the history input field."""
+        if self.history_input_field.collidepoint(position):
+            self.history_input_active = True
+            return True
+
+        self.history_input_active = False
+        return False
+
+    def get_history_suggestion_at_position(self, position: tuple[int, int]) -> tuple[int, str] | None:
+        """Returns the clicked suggestion, if any."""
+        for rect, suggestion in self.history_suggestion_rects:
+            if rect.collidepoint(position):
+                return suggestion
+        return None
+
+    def handle_history_input_key(self, event) -> bool:
+        """Handles keyboard input for the history lookup field."""
+        if event.type != pygame.KEYDOWN or not self.history_input_active:
+            return False
+
+        if event.key == pygame.K_RETURN:
+            return True
+        if event.key == pygame.K_BACKSPACE:
+            self.history_player_text = self.history_player_text[:-1]
+        elif event.unicode.isprintable() and len(self.history_player_text) < 30:
+            self.history_player_text += event.unicode
+        return False
+
+    def get_history_input_value(self) -> str:
+        return self.history_player_text.strip()
 
     def build_hole_position(self):
         """Calculates and stores the screen positions of all holes."""
