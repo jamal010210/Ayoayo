@@ -1,6 +1,5 @@
-from game_logic.Board import Board
-
 def get_legal_moves(board, player):
+    """Returns the legal moves the bot can do."""
     moves = []
 
     for i in range(len(board.field_collection.fields)):
@@ -10,7 +9,8 @@ def get_legal_moves(board, player):
     return moves
 
 
-def choose_move(board, player, get_legal_moves,depth):
+def choose_move(board, player, depth):
+    """Lets the bot pick a move."""
     legal_moves = get_legal_moves(board, player)
 
     best_move = None
@@ -26,7 +26,7 @@ def choose_move(board, player, get_legal_moves,depth):
         if depth <= 1:
             score = clone.bank[player] - clone.bank[opponent]
         else:
-            opponent_move = choose_move(clone, opponent, get_legal_moves, depth - 1)
+            opponent_move = choose_move(clone, opponent, depth - 1)
             if opponent_move is not None:
                 clone.seed_from_field(opponent_move, opponent)
 

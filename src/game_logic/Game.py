@@ -1,9 +1,10 @@
-from GameMode import GameMode
-from game_logic.Player import Player
-from game_logic.Board import Board
+from src.GameMode import GameMode
+from src.game_logic.Player import Player
+from src.game_logic.Board import Board
 
 
 class Game:
+    """Holds all the information for an ongoing game"""
     def __init__(self):
         self.mode: GameMode | None = None
         self.player_1 = Player("Player 1")
@@ -14,10 +15,7 @@ class Game:
 
     def current_player(self):
         """Returns the current player"""
-        if self.current_round() % 2 == 1:
-            return self.player_1
-        else:
-            return self.player_2
+        return self.player_2 if self.current_round() % 2 == 0 else self.player_1
 
     def end_turn(self):
         """Ends the turn"""
@@ -66,25 +64,28 @@ class Game:
                 self.winner = "draw"
 
     def get_winner_name(self):
+        """Returns the name of the winner (or Draw if the result is a draw)"""
         if self.winner == "draw":
             return "Draw"
-        elif self.winner:
+        if self.winner:
             return self.winner.name
         return None
 
     def get_loser_name(self):
+        """Returns the name of the loser (or Draw if the result is a draw)"""
         if self.winner == "draw":
             return "Draw"
-        elif self.winner == self.player_1:
+        if self.winner == self.player_1:
             return self.player_2.name
-        elif self.winner == self.player_2:
+        if self.winner == self.player_2:
             return self.player_1.name
         return None
 
     def get_scores(self):
+        """Returns the scores for all players"""
         return self.board.bank[self.player_1], self.board.bank[self.player_2]
 
     def set_player_names(self, player_1_name: str, player_2_name: str):
+        """Updates the player names"""
         self.player_1.name = player_1_name
         self.player_2.name = player_2_name
-

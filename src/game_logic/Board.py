@@ -1,5 +1,5 @@
-from game_logic.FieldCollection import FieldCollection
-from game_logic.Player import Player
+from src.game_logic.FieldCollection import FieldCollection
+from src.game_logic.Player import Player
 
 
 class Board:
@@ -13,6 +13,7 @@ class Board:
         self.field_collection = FieldCollection(player_1, player_2)
 
     def seed_from_field(self, index: int, player: Player):
+        """Handle seeding from a particular field"""
         last_field = self.field_collection.start_seeding_from(index, player)
         harvested_beans = self.field_collection.start_harvesting_from(
             last_field, player
@@ -20,6 +21,7 @@ class Board:
         self.bank[player] += harvested_beans
 
     def clone_deep(self):
+        """Deeply clone this board and its state"""
         player_1 = list(self.bank.keys())[0]
         player_2 = list(self.bank.keys())[1]
 

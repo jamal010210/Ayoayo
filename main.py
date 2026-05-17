@@ -1,15 +1,12 @@
 import math
 import pygame
-from game_logic.Game import Game
-from Board_renderer import Renderer, HOLE_RADIUS
-import persistence
-from bot.bot_logic import choose_move, get_legal_moves
-from GameMode import GameMode
+from src.Board_renderer import Renderer, HOLE_RADIUS
+from src.game_logic.Game import Game
+from src import persistence
+from src.bot.bot_logic import choose_move
+from src.GameMode import GameMode
 
 # pylint: disable=no-member
-
-
-
 
 
 pygame.init()
@@ -35,13 +32,19 @@ while True:
                     if renderer.get_return_to_menu_button_collision(event.pos):
                         history_mode = False
                     else:
-                        clicked_suggestion = renderer.get_history_suggestion_at_position(event.pos)
+                        clicked_suggestion = (
+                            renderer.get_history_suggestion_at_position(event.pos)
+                        )
                         if clicked_suggestion:
                             renderer.history_player_text = clicked_suggestion[1]
                             renderer.history_suggestions = []
-                            player = persistence.get_player_by_name(clicked_suggestion[1])
+                            player = persistence.get_player_by_name(
+                                clicked_suggestion[1]
+                            )
                             if player:
-                                history_results = persistence.get_player_history(player[0])
+                                history_results = persistence.get_player_history(
+                                    player[0]
+                                )
                                 history_error = None
                             else:
                                 history_error = f"No exact player found for '{clicked_suggestion[1]}'."
@@ -60,7 +63,9 @@ while True:
                         history_results = None
                         history_error = None
             elif game.mode == GameMode.HUMAN_VS_BOT and bot_search_depth is None:
-                bot_search_depth = renderer.get_depth_from_position(event.pos) or bot_search_depth
+                bot_search_depth = (
+                    renderer.get_depth_from_position(event.pos) or bot_search_depth
+                )
             elif not names_set:
                 renderer.handle_name_input_click(event.pos, game.mode)
             else:
@@ -82,7 +87,9 @@ while True:
                     distance = math.sqrt((click_x - x) ** 2 + (click_y - y) ** 2)
                     if distance < HOLE_RADIUS:
                         try:
-                            game.board.seed_from_field(field_index, game.current_player())
+                            game.board.seed_from_field(
+                                field_index, game.current_player()
+                            )
                             game.end_turn()
                         except ValueError:
                             pass
@@ -96,12 +103,16 @@ while True:
                     else:
                         player = persistence.get_player_by_name(player_name)
                         if not player:
-                            history_error = f"No exact player found for '{player_name}'."
+                            history_error = (
+                                f"No exact player found for '{player_name}'."
+                            )
                             history_results = []
                         else:
                             history_results = persistence.get_player_history(player[0])
                             history_error = None
-                renderer.history_suggestions = persistence.get_player_suggestions(renderer.get_history_input_value())
+                renderer.history_suggestions = persistence.get_player_suggestions(
+                    renderer.get_history_input_value()
+                )
             elif not names_set:
                 if renderer.handle_name_input_key(event, game.mode):
                     player1_name, player2_name = renderer.get_player_names()
@@ -111,15 +122,13 @@ while True:
                         game.set_player_names(player1_name, "Bot")
                     names_set = True
 
-
     if game.mode == GameMode.HUMAN_VS_BOT:
         if game.current_player() == game.player_2:
 
             move = choose_move(
                 game.board,
                 game.current_player(),
-                get_legal_moves,
-                bot_search_depth if bot_search_depth else 1
+                bot_search_depth if bot_search_depth else 1,
             )
             if move is not None:
                 game.board.seed_from_field(move, game.current_player())
@@ -137,7 +146,9 @@ while True:
             p1_score,
             p2_score,
         )
-        print(f"Game saved: Winner {winner_name}, Loser {loser_name}, Scores {p1_score}-{p2_score}")
+        print(
+            f"Game saved: Winner {winner_name}, Loser {loser_name}, Scores {p1_score}-{p2_score}"
+        )
         game_saved = True
 
     if game.mode is None:

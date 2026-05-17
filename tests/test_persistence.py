@@ -7,6 +7,7 @@ def _reset_db():
 
 
 def test_save_and_get():
+    """Tests whether player names are correctly saved and retrieved."""
     _reset_db()
     persistence.init_db()
     persistence.save_result("Alice", "Bob", "Alice", "Bob", 25, 20)
@@ -34,6 +35,7 @@ def test_save_and_get():
 
 
 def test_get_player_history():
+    """Tests whether score history is correctly saved and retrieved."""
     _reset_db()
     persistence.init_db()
     persistence.save_result("Alice", "Bob", "Alice", "Bob", 25, 20)
@@ -49,6 +51,7 @@ def test_get_player_history():
     assert history[0][8] == 20
 
     print("Test passed: Player history lookup returned the saved game")
+
 
 if __name__ == "__main__":
     test_save_and_get()

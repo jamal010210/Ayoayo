@@ -10,6 +10,7 @@ def _timestamp():
 
 
 def init_db():
+    """Initializes the database"""
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS players (
@@ -22,6 +23,7 @@ def init_db():
                 last_played TEXT
             )
         """)
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS results (
                 id INTEGER PRIMARY KEY,
@@ -88,7 +90,11 @@ def _update_player_stats(conn, player_id, wins=0, losses=0, draws=0):
     )
 
 
-def save_result(player1_name, player2_name, winner_name, loser_name, player1_score, player2_score):
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+def save_result(
+    player1_name, player2_name, winner_name, loser_name, player1_score, player2_score
+):
+    """Saves the result of a run into the database"""
     timestamp = _timestamp()
     with sqlite3.connect(DB_PATH) as conn:
         player1_id = _get_player_id(conn, player1_name)
@@ -144,38 +150,49 @@ def save_result(player1_name, player2_name, winner_name, loser_name, player1_sco
 
 
 def get_results():
+    """Returns all results recorded thus far"""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute("SELECT * FROM results ORDER BY timestamp DESC")
         return cursor.fetchall()
 
 
 def get_players():
+    """Returns all player data"""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
-            "SELECT id, name, wins, losses, draws, games_played, last_played FROM players ORDER BY wins DESC, games_played DESC"
+            """SELECT id, name, wins, losses, draws, games_played, last_played
+            FROM players
+            ORDER BY wins DESC, games_played DESC"""
         )
         return cursor.fetchall()
 
 
 def get_player_by_id(player_id):
+    """Returns the player data by ID"""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
-            "SELECT id, name, wins, losses, draws, games_played, last_played FROM players WHERE id = ?",
+            """SELECT id, name, wins, losses, draws, games_played, last_played
+            FROM players
+            WHERE id = ?""",
             (player_id,),
         )
         return cursor.fetchone()
 
 
 def get_player_by_name(name):
+    """Returns the player ID by name"""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
-            "SELECT id, name, wins, losses, draws, games_played, last_played FROM players WHERE LOWER(name) = LOWER(?) LIMIT 1",
+            """SELECT id, name, wins, losses, draws, games_played, last_played
+            FROM players
+            WHERE LOWER(name) = LOWER(?) LIMIT 1""",
             (name,),
         )
         return cursor.fetchone()
 
 
 def get_player_suggestions(name_query):
+    """Returns the suggestions (possible players) for a given player name pattern"""
     query = name_query.strip()
     if not query:
         return []
@@ -200,6 +217,7 @@ def get_player_suggestions(name_query):
 
 
 def get_player_history(player_id):
+    """Returns the history for a given player ID"""
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.execute(
             """

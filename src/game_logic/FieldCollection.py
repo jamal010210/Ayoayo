@@ -1,9 +1,9 @@
-from game_logic.Field import Field
-from game_logic.Player import Player
+from src.game_logic.Field import Field
+from src.game_logic.Player import Player
 
 
-# Holds all the fields and handles tasks that affect multiple fields
 class FieldCollection:
+    """Holds all the fields and handles tasks that affect multiple fields"""
     NUMBER_OF_FIELDS = 12
     SKIP_RULE_NUMBER = 12
     MIN_BEANS_FOR_HARVES = 2
@@ -28,6 +28,7 @@ class FieldCollection:
         return fields
 
     def clone(self):
+        """Clone this FieldCollection."""
         # Create empty object instead of using the initializer unnecessarily
         clone = object.__new__(type(self))
 
@@ -49,8 +50,8 @@ class FieldCollection:
 
     def get_field_index(self, field: Field) -> int:
         """Return the board index of a field"""
-        for i in range(len(self.fields)):
-            if field is self.fields[i]:
+        for i, f in enumerate(self.fields):
+            if field is f:
                 return i
 
         raise ValueError("Field not found in list")
@@ -65,6 +66,7 @@ class FieldCollection:
         return True
 
     def can_reach_opponent(self, index: int, player: Player):
+        """Returns true if the given player has valid moves left."""
         last_own_index = 0
         for i in range(self.NUMBER_OF_FIELDS):
             if self.fields[i].owner is player:
@@ -74,6 +76,7 @@ class FieldCollection:
         return self.fields[index].bean_count() >= distance_to_opponent
 
     def has_valid_moves(self, player: Player):
+        """Returns true if the given player has valid moves left."""
         for i in range(self.NUMBER_OF_FIELDS):
             if self.can_seed_from(i, player):
                 return True
@@ -87,7 +90,6 @@ class FieldCollection:
 
         if self.fields[index].bean_count() < 1:
             return False
-
 
         # The feeding rule says:
         # When the opponent has no seeds, only let me take the seeds
@@ -159,7 +161,6 @@ class FieldCollection:
         ):
             return False
 
-        # todo implement starving check -done!
         if self.would_starve_opponent(index, player):
             return False
 
@@ -168,7 +169,8 @@ class FieldCollection:
     def skip_rule_applies(self, index: int, player: Player):
         """
         The skip rule says:
-        While seeding on a players own first field it is skipped when it already has a certain amount of beans
+        While seeding on a players own first field
+        it is skipped when it already has a certain amount of beans
         """
         return (
             self.fields[index].bean_count() >= self.SKIP_RULE_NUMBER
