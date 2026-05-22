@@ -21,8 +21,9 @@ Completed games are stored in `game_results.db` with winner, scores, and timesta
 .
 ├── img
 ├── src
-│   ├── ayoayo.egg-info
 │   ├── bot
 │   └── game_logic
 └── tests
+    ├── bot
+    └── game_logic
 ```
