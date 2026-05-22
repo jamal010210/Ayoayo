@@ -14,3 +14,14 @@ Completed games are stored in `game_results.db` with winner, scores, and timesta
 
 * Lint using `pylint src tests`
 * Run tests using `pytest`
+* Run tests with coverage: `pytest --cov=src --cov-report=term-missing tests/`
+
+## Repository Structure
+.
+├── img
+├── src
+│   ├── ayoayo.egg-info
+│   ├── bot
+│   └── game_logic
+└── tests
+
