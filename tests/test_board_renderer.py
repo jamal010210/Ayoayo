@@ -1,6 +1,7 @@
 """Tests for the Board_renderer module."""
 
 # pylint: disable=no-member, too-few-public-methods
+# pylint: disable=protected-access
 
 import os
 

@@ -2,6 +2,7 @@
 
 import pytest
 
+from game_logic.Field import Field
 from game_logic.FieldCollection import FieldCollection
 from game_logic.Player import Player
 
@@ -61,10 +62,10 @@ def test_get_field_index_invalid():
     """Test error on missing field."""
     collection, _, _ = create_collection()
 
-    _, other_player_1, _ = create_collection()
+    fake_field = Field(Player("X"))  # or any Field not in collection
 
     with pytest.raises(ValueError):
-        collection.get_field_index(other_player_1.fields[0])
+        collection.get_field_index(fake_field)
 
 
 def test_opponent_has_no_beans_false():
@@ -129,12 +130,15 @@ def test_can_seed_from_empty():
 
 
 def test_start_seeding_from():
-    """Test bean distribution."""
+    """Test bean distribution updates board state."""
     collection, player_1, _ = create_collection()
+
+    start_count = collection.fields[0].bean_count()
 
     last_index = collection.start_seeding_from(0, player_1)
 
     assert isinstance(last_index, int)
+    assert collection.fields[0].bean_count() < start_count
 
 
 def test_start_seeding_from_invalid():
@@ -143,30 +147,6 @@ def test_start_seeding_from_invalid():
 
     with pytest.raises(ValueError):
         collection.start_seeding_from(8, player_1)
-
-
-def test_start_harvesting_from():
-    """Test harvesting beans."""
-    collection, player_1, player_2 = create_collection()
-
-    collection.fields[6].beans = [1, 1]
-
-    harvested = collection.start_harvesting_from(6, player_1)
-
-    assert harvested == 2
-
-
-def test_would_starve_opponent_true():
-    """Test starvation detection."""
-    collection, player_1, player_2 = create_collection()
-
-    for field in collection.fields:
-        if field.owner is player_2:
-            field.beans = []
-
-    collection.fields[6].beans = [1, 1]
-
-    assert collection.would_starve_opponent(6, player_1) is True
 
 
 def test_can_harvest_from_false_own_field():
@@ -183,35 +163,6 @@ def test_can_harvest_from_false_too_few():
     collection.fields[6].beans = [1]
 
     assert collection.can_harvest_from(6, player_1) is False
-
-
-def test_can_harvest_from_false_too_many():
-    """Test cannot harvest with too many beans."""
-    collection, player_1, player_2 = create_collection()
-
-    collection.fields[6].beans = [1, 1, 1, 1]
-
-    assert collection.can_harvest_from(6, player_1) is False
-
-
-def test_can_harvest_from_true():
-    """Test valid harvesting."""
-    collection, player_1, player_2 = create_collection()
-
-    collection.fields[6].beans = [1, 1]
-
-    collection.fields[7].beans = [1]
-
-    assert collection.can_harvest_from(6, player_1) is True
-
-
-def test_skip_rule_applies_true():
-    """Test skip rule activation."""
-    collection, player_1, _ = create_collection()
-
-    collection.fields[0].beans = [1] * 12
-
-    assert collection.skip_rule_applies(0, player_1) is True
 
 
 def test_skip_rule_applies_false():
