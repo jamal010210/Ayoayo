@@ -1,9 +1,10 @@
-from src.game_logic.Field import Field
-from src.game_logic.Player import Player
+from game_logic.Field import Field
+from game_logic.Player import Player
 
 
 class FieldCollection:
     """Holds all the fields and handles tasks that affect multiple fields"""
+
     NUMBER_OF_FIELDS = 12
     SKIP_RULE_NUMBER = 12
     MIN_BEANS_FOR_HARVES = 2

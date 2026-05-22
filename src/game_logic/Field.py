@@ -1,7 +1,7 @@
 import math
 import random
 
-from src.game_logic.Player import Player
+from game_logic.Player import Player
 
 # pylint: disable=too-few-public-methods
 # Start with four beans per field
