@@ -19,4 +19,6 @@ where = ["src"]
 [dependency-groups]
 dev = [
     "pylint>=4.0.5",
+    "pytest",
+    "pytest-cov"
 ]
