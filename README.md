@@ -17,6 +17,7 @@ Completed games are stored in `game_results.db` with winner, scores, and timesta
 * Run tests with coverage: `pytest --cov=src --cov-report=term-missing tests/`
 
 ## Repository Structure
+``
 .
 ├── img
 ├── src
@@ -24,4 +25,4 @@ Completed games are stored in `game_results.db` with winner, scores, and timesta
 │   ├── bot
 │   └── game_logic
 └── tests
-
+```
