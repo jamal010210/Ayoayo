@@ -7,10 +7,11 @@ def _reset_db():
 
 
 def test_save_and_get():
-    """Tests whether player names are correctly saved and retrieved."""
+    """Tests whether players and results are correctly saved and retrieved."""
     _reset_db()
     persistence.init_db()
-    persistence.save_result("Alice", "Bob", "Alice", "Bob", 25, 20)
+
+    persistence.save_result("Alice", "Bob", 25, 20)
 
     results = persistence.get_results()
     players = persistence.get_players()
@@ -21,36 +22,47 @@ def test_save_and_get():
     alice = next(row for row in players if row[1] == "Alice")
     bob = next(row for row in players if row[1] == "Bob")
 
-    assert alice[2] == 1
-    assert alice[3] == 0
-    assert alice[4] == 0
-    assert alice[5] == 1
+    # Alice wins (25 > 20)
+    assert alice[2] == 1  # wins
+    assert alice[3] == 0  # losses
+    assert alice[4] == 0  # draws
+    assert alice[5] == 1  # games_played
 
     assert bob[2] == 0
     assert bob[3] == 1
     assert bob[4] == 0
     assert bob[5] == 1
 
-    print("Test passed: Result saved and player statistics created")
+    print("Test passed: Result saved and player stats updated")
 
 
 def test_get_player_history():
-    """Tests whether score history is correctly saved and retrieved."""
+    """Tests whether match history is correctly saved and retrieved."""
     _reset_db()
     persistence.init_db()
-    persistence.save_result("Alice", "Bob", "Alice", "Bob", 25, 20)
 
-    player = persistence.get_player_by_id(1)
+    persistence.save_result("Alice", "Bob", 25, 20)
+
+    player = persistence.get_player_by_name("Alice")
     assert player is not None
-    assert player[1] == "Alice"
+    alice_id = player[0]
 
-    history = persistence.get_player_history(1)
+    history = persistence.get_player_history(alice_id)
+
     assert len(history) == 1
-    assert history[0][3] == "Alice"
-    assert history[0][7] == 25
-    assert history[0][8] == 20
 
-    print("Test passed: Player history lookup returned the saved game")
+    row = history[0]
+
+    # New schema (joined fields):
+    # (id, player1_name, player2_name, winner_name, loser_name, p1_score, p2_score, timestamp)
+
+    assert row[1] == "Alice"
+    assert row[2] == "Bob"
+    assert row[3] == "Alice"   # winner
+    assert row[5] == 25
+    assert row[6] == 20
+
+    print("Test passed: Player history lookup returned correct match data")
 
 
 if __name__ == "__main__":
