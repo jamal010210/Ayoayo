@@ -1,6 +1,6 @@
-from src.GameMode import GameMode
-from src.game_logic.Player import Player
-from src.game_logic.Board import Board
+from GameMode import GameMode
+from game_logic.Player import Player
+from game_logic.Board import Board
 
 
 class Game:

@@ -1,5 +1,5 @@
-from src.game_logic.FieldCollection import FieldCollection
-from src.game_logic.Player import Player
+from game_logic.FieldCollection import FieldCollection
+from game_logic.Player import Player
 
 
 class Board:
