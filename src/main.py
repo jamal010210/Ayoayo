@@ -46,7 +46,7 @@ def handle_events():
 
 def handle_mouse(pos):
     """Handle all mouse click input."""
-    global bot_search_depth, names_set
+    global bot_search_depth
 
     if history.active:
         history.handle_click(pos)
@@ -77,7 +77,6 @@ def handle_mouse(pos):
 
 def handle_key(event):
     """Handle keyboard input."""
-    global names_set
 
     if history.active:
         history.handle_key(event)
@@ -148,7 +147,7 @@ def handle_bot_move():
 
 def reset_game():
     """Reset the current game state."""
-    global game, renderer, bot_search_depth, session, names_set
+    global game, bot_search_depth, session, names_set
 
     game = Game()
     renderer.game = game
