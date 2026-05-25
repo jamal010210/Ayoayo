@@ -90,7 +90,8 @@ def test_can_reach_opponent_true():
     """Test reaching opponent side."""
     collection, player_1, _ = create_collection()
 
-    collection.fields[5].beans = [1]
+    collection.fields[5].remove_beans()
+    collection.fields[5].add_bean()
 
     assert collection.can_reach_opponent(5, player_1) is True
 
@@ -160,7 +161,8 @@ def test_can_harvest_from_false_too_few():
     """Test cannot harvest with too few beans."""
     collection, player_1, player_2 = create_collection()
 
-    collection.fields[6].beans = [1]
+    collection.fields[6].remove_beans()
+    collection.fields[6].add_bean()
 
     assert collection.can_harvest_from(6, player_1) is False
 
@@ -169,6 +171,8 @@ def test_skip_rule_applies_false():
     """Test skip rule inactive."""
     collection, player_1, _ = create_collection()
 
-    collection.fields[0].beans = [1] * 5
+    collection.fields[0].remove_beans()
+    for _ in range(5):
+        collection.fields[0].add_bean()
 
     assert collection.skip_rule_applies(0, player_1) is False
