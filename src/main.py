@@ -5,25 +5,22 @@ from game_logic.Game import Game
 import persistence
 from bot.bot_logic import choose_move
 from GameMode import GameMode
-
+from GameSession import GameSession
 # pylint: disable=no-member
 
 
 pygame.init()
 persistence.init_db()
 game = Game()
+session = GameSession(game)
 renderer = Renderer(game)
 clock = pygame.time.Clock()
 bot_search_depth: int | None = None
-game_saved = False
 names_set = False
 history_mode = False
 history_results: list[tuple] | None = None
 history_error: str | None = None
 
-# =========================================================
-# MAIN LOOP
-# =========================================================
 
 def main():
     while True:
@@ -32,10 +29,6 @@ def main():
         render()
         clock.tick(60)
 
-
-# =========================================================
-# EVENT HANDLING
-# =========================================================
 
 def handle_events():
     for event in pygame.event.get():
@@ -95,10 +88,6 @@ def handle_key(event):
             names_set = True
 
 
-# =========================================================
-# MENU LOGIC
-# =========================================================
-
 def handle_menu_click(pos):
     global history_mode, history_results, history_error
 
@@ -119,10 +108,6 @@ def handle_menu_click(pos):
         history_results = None
         history_error = None
 
-
-# =========================================================
-# HISTORY LOGIC
-# =========================================================
 
 def handle_history_click(pos):
     global history_results, history_error
@@ -175,10 +160,6 @@ def handle_history_key(event):
     )
 
 
-# =========================================================
-# GAME INPUT (BOARD)
-# =========================================================
-
 def handle_board_click(pos):
     click_x, click_y = pos
 
@@ -193,13 +174,9 @@ def handle_board_click(pos):
                 pass
 
 
-# =========================================================
-# UPDATE LOGIC
-# =========================================================
-
 def update():
     handle_bot_move()
-    handle_save_result()
+    session.save_result()
 
 
 def handle_bot_move():
@@ -220,37 +197,14 @@ def handle_bot_move():
         game.end_turn()
 
 
-def handle_save_result():
-    global game_saved
-
-    if game.winner and not game_saved:
-        persistence.save_result(
-            game.player_1.name,
-            game.player_2.name,
-            game.get_winner_name(),
-            game.get_loser_name(),
-            *game.get_scores(),
-        )
-        game_saved = True
-
-        print(
-            f"Game saved: Winner {game.get_winner_name()}, "
-            f"Loser {game.get_loser_name()}, Scores {game.get_scores()}"
-        )
-
-
-# =========================================================
-# RESET / NAVIGATION
-# =========================================================
-
 def reset_game():
-    global game, renderer, bot_search_depth, game_saved, names_set
+    global game, renderer, bot_search_depth, session, names_set
 
     game = Game()
     renderer.game = game
 
+    session = GameSession(game)
     bot_search_depth = None
-    game_saved = False
     names_set = False
 
 
@@ -258,10 +212,6 @@ def return_to_menu():
     global history_mode
     history_mode = False
 
-
-# =========================================================
-# RENDERING
-# =========================================================
 
 def render():
     if game.mode is None:
@@ -279,10 +229,6 @@ def render():
     else:
         renderer.draw()
 
-
-# =========================================================
-# ENTRY POINT
-# =========================================================
 
 if __name__ == "__main__":
     main()
