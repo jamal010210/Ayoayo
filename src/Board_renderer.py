@@ -298,26 +298,38 @@ class Renderer:
         if self.history_suggestions:
             suggest_title = instr_font.render("Suggestions:", True, TEXT_COLOR)
             self.screen.blit(suggest_title, (80, suggestion_start))
-            for idx, suggestion in enumerate(self.history_suggestions[:5]):
+
+            visible_suggestions = self.history_suggestions[:5]
+
+            for idx, (player_id, player_name) in enumerate(visible_suggestions):
                 suggestion_y = suggestion_start + 28 + idx * 34
+
                 rect = pygame.Rect(
-                    self.history_input_field.left, suggestion_y, HISTORY_INPUT_WIDTH, 30
+                    self.history_input_field.left,
+                    suggestion_y,
+                    HISTORY_INPUT_WIDTH,
+                    30,
                 )
+
                 pygame.draw.rect(self.screen, (60, 60, 60), rect)
                 pygame.draw.rect(self.screen, TEXT_COLOR, rect, 1)
+
                 suggestion_text = instr_font.render(
-                    f"{suggestion[1]} (ID {suggestion[0]})",
+                    player_name,
                     True,
                     (220, 220, 220),
                 )
+
                 self.screen.blit(suggestion_text, (rect.left + 8, rect.top + 5))
-                self.history_suggestion_rects.append((rect, suggestion))
-            rows_start = (
-                suggestion_start + 28 + len(self.history_suggestions[:5]) * 34 + 10
-            )
+
+                self.history_suggestion_rects.append(
+                    (rect, (player_id, player_name))
+                )
+
+            rows_start = suggestion_start + 28 + len(visible_suggestions) * 34 + 10
+
         else:
             rows_start = self.history_input_field.bottom + 120
-
         if history_rows is not None and not error_text:
             if len(history_rows) == 0:
                 empty_text = self.font.render(
@@ -331,18 +343,21 @@ class Renderer:
                 for idx, row in enumerate(history_rows[:8]):
                     (
                         game_id,
-                        _,
-                        _,
                         player1_name,
                         player2_name,
-                        winner,
+                        winner_name,
                         _,
                         player1_score,
                         player2_score,
                         _,
                     ) = row
-                    # pylint: disable=line-too-long
-                    summary = f"Game {game_id}: {player1_name} {player1_score}-{player2_score} {player2_name} | Winner: {winner}"
+
+                    summary = (
+                        f"Game {game_id}: "
+                        f"{player1_name} {player1_score}-{player2_score} "
+                        f"{player2_name} | Winner: {winner_name or 'Draw'}"
+                    )
+
                     row_text = instr_font.render(summary, True, TEXT_COLOR)
                     self.screen.blit(row_text, (80, rows_start + idx * 30))
                 if len(history_rows) > 8:
