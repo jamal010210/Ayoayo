@@ -11,10 +11,10 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "AYOAYO"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["AYOAYO"]
+where = ["src"]
 
 [dependency-groups]
 dev = [
