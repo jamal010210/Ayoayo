@@ -9,32 +9,33 @@ class GameSession:
     """
 
     def __init__(self, game):
-        """Initializes a game session tied to a Game instance."""
+        """Initialize the session with a game instance."""
         self.game = game
         self._saved = False
 
     def should_save(self) -> bool:
-        """Checks whether the current game result should be saved."""
+        """Check if the game result should be saved."""
         return self.game.winner is not None and not self._saved
 
     def save_result(self):
-        """Saves the game result to persistence if not already saved."""
+        """Save the game result if it has not been saved yet."""
         if not self.should_save():
             return
+
+        p1_score, p2_score = self.game.get_scores()
 
         persistence.save_result(
             self.game.player_1.name,
             self.game.player_2.name,
-            self.game.get_winner_name(),
-            self.game.get_loser_name(),
-            *self.game.get_scores(),
+            p1_score,
+            p2_score,
         )
 
         self._saved = True
         self._log_save()
 
     def _log_save(self):
-        """Logs the saved game result to the console."""
+        """Log the saved game result to stdout."""
         print(
             f"Game saved: Winner {self.game.get_winner_name()}, "
             f"Loser {self.game.get_loser_name()}, "
@@ -42,6 +43,6 @@ class GameSession:
         )
 
     def reset(self, new_game):
-        """Resets the session with a new game instance."""
+        """Reset the session with a new game and clear save state."""
         self.game = new_game
         self._saved = False
