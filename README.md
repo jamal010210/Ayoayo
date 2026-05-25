@@ -12,7 +12,7 @@ Completed games are stored in `game_results.db` with winner, scores, and timesta
 
 1. Install the dependencies (e.g. `uv sync`)
 2. Source the venv (`source .venv/bin/activate`)
-3. Run the game using `python main.py`
+3. Run the game using `python src/main.py`
 
 ## Testing
 
