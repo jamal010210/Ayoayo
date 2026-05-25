@@ -77,6 +77,7 @@ def handle_mouse(pos):
 
 def handle_key(event):
     """Handle keyboard input."""
+    global names_set
 
     if history.active:
         history.handle_key(event)
