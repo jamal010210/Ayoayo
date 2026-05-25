@@ -7,6 +7,7 @@ class HistoryController:
     """
 
     def __init__(self, renderer, persistence):
+        """Initializes the history controller with renderer and persistence layer."""
         self.renderer = renderer
         self.persistence = persistence
 
@@ -15,6 +16,7 @@ class HistoryController:
         self.error = None
 
     def open(self):
+        """Opens the history screen and resets UI state."""
         self.active = True
         self.results = None
         self.error = None
@@ -24,9 +26,11 @@ class HistoryController:
         self.renderer.history_suggestions = []
 
     def close(self):
+        """Closes the history screen."""
         self.active = False
 
     def handle_click(self, pos):
+        """Handles mouse clicks on the history screen."""
         # return button
         if self.renderer.get_return_to_menu_button_collision(pos):
             self.close()
@@ -43,6 +47,7 @@ class HistoryController:
         self.renderer.handle_history_input_click(pos)
 
     def handle_key(self, event):
+        """Handles keyboard input for history search."""
         if self.renderer.handle_history_input_key(event):
             name = self.renderer.get_history_input_value()
             self._load_player(name)
@@ -54,6 +59,7 @@ class HistoryController:
         )
 
     def _load_player(self, name: str):
+        """Loads match history for a given player name."""
         if not name:
             self.results = []
             self.error = "Enter a player name."
@@ -70,4 +76,5 @@ class HistoryController:
         self.error = None
 
     def render(self):
+        """Renders the history screen."""
         self.renderer.draw_history_screen(self.results, self.error)

@@ -20,7 +20,9 @@ clock = pygame.time.Clock()
 bot_search_depth: int | None = None
 names_set = False
 
+
 def main():
+    """Main game loop."""
     while True:
         handle_events()
         update()
@@ -29,6 +31,7 @@ def main():
 
 
 def handle_events():
+    """Process all pygame events."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -42,12 +45,13 @@ def handle_events():
 
 
 def handle_mouse(pos):
+    """Handle all mouse click input."""
     global bot_search_depth, names_set
 
     if history.active:
         history.handle_click(pos)
         return
-    
+
     if game.mode is None:
         handle_menu_click(pos)
         return
@@ -72,6 +76,7 @@ def handle_mouse(pos):
 
 
 def handle_key(event):
+    """Handle keyboard input."""
     global names_set
 
     if history.active:
@@ -91,7 +96,7 @@ def handle_key(event):
 
 
 def handle_menu_click(pos):
-
+    """Handle clicks on the main menu."""
     selected_mode = renderer.get_mode_from_position(pos)
     if selected_mode is not None:
         game.mode = selected_mode
@@ -102,6 +107,7 @@ def handle_menu_click(pos):
 
 
 def handle_board_click(pos):
+    """Handle clicks on the game board."""
     click_x, click_y = pos
 
     for field_index, x, y in renderer.hole_positions:
@@ -116,11 +122,13 @@ def handle_board_click(pos):
 
 
 def update():
+    """Update game state each frame."""
     handle_bot_move()
     session.save_result()
 
 
 def handle_bot_move():
+    """Let bot make a move if it is its turn."""
     if game.mode != GameMode.HUMAN_VS_BOT:
         return
 
@@ -139,6 +147,7 @@ def handle_bot_move():
 
 
 def reset_game():
+    """Reset the current game state."""
     global game, renderer, bot_search_depth, session, names_set
 
     game = Game()
@@ -148,10 +157,11 @@ def reset_game():
     bot_search_depth = None
     names_set = False
 
-
     history.close()
 
+
 def render():
+    """Render the current frame."""
     if game.mode is None:
         if history.active:
             history.render()
