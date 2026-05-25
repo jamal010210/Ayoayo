@@ -13,6 +13,14 @@ from HistoryController import HistoryController
 pygame.init()
 persistence.init_db()
 class App:
+    """
+    Main application controller for the Ayoayo game.
+
+    Responsible for:
+    - Initializing core game components (Game, Renderer, History, Session)
+    - Managing the game loop execution (events, updates, rendering)
+    - Maintaining runtime state such as clock and UI-related flags
+    """
     def __init__(self):
         self.game = Game()
         self.session = GameSession(self.game)
@@ -56,7 +64,10 @@ class App:
             return
 
         if self.game.mode == GameMode.HUMAN_VS_BOT and self.bot_search_depth is None:
-            self.bot_search_depth = self.renderer.get_depth_from_position(pos) or self.bot_search_depth
+            self.bot_search_depth = (
+                self.renderer.get_depth_from_position(pos)
+                or self.bot_search_depth
+            )
             return
 
         if not self.names_set:
