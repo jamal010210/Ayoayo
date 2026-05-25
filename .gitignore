@@ -3,9 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+/game_results.db
+
 # Virtual environment
 venv/
 ENV/
+
+# Database 
+game_results.db
 
 # Distribution / packaging
 build/
@@ -20,6 +25,7 @@ dist/
 .idea/
 *.sublime-project
 *.sublime-workspace
+pyrightconfig.json
 
 # OS files
 .DS_Store

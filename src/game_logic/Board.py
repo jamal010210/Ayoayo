@@ -1,0 +1,32 @@
+from game_logic.FieldCollection import FieldCollection
+from game_logic.Player import Player
+
+
+class Board:
+    """
+    The board. Contains the fields and the banks.
+    Can be used as a state to undo turns.
+    """
+
+    def __init__(self, player_1: Player, player_2: Player):
+        self.bank = {player_1: 0, player_2: 0}
+        self.field_collection = FieldCollection(player_1, player_2)
+
+    def seed_from_field(self, index: int, player: Player):
+        """Handle seeding from a particular field"""
+        last_field = self.field_collection.start_seeding_from(index, player)
+        harvested_beans = self.field_collection.start_harvesting_from(
+            last_field, player
+        )
+        self.bank[player] += harvested_beans
+
+    def clone_deep(self):
+        """Deeply clone this board and its state"""
+        player_1 = list(self.bank.keys())[0]
+        player_2 = list(self.bank.keys())[1]
+
+        clone = Board(player_1, player_2)
+        clone.field_collection = self.field_collection.clone()
+        clone.bank = self.bank.copy()
+
+        return clone
